@@ -1,0 +1,57 @@
+[
+    {
+        "tenant": "Lumiq-thailand.com",
+        "source": "api",
+        "event_type": "login_success",
+        "user": "TestUser1",
+        "ip": "192.168.1.201",
+        "url": "/login",
+        "method": "POST",
+        "status_code": 200,
+        "severity": 1
+    },
+    {
+        "tenant": "Lumiq-thailand.com",
+        "source": "api",
+        "event_type": "page_view",
+        "user": "TestUser1",
+        "ip": "192.168.1.201",
+        "url": "/dashboard",
+        "method": "GET",
+        "status_code": 200,
+        "severity": 1
+    },
+    {
+        "tenant": "Lumiq-thailand.com",
+        "source": "api",
+        "event_type": "login_failed",
+        "user": "TestUser2",
+        "ip": "10.0.0.50",
+        "url": "/login",
+        "method": "POST",
+        "status_code": 401,
+        "severity": 4
+    },
+    {
+        "tenant": "Lumiq-thailand.com",
+        "source": "api",
+        "event_type": "api_request",
+        "user": "TestUser2",
+        "ip": "10.0.0.50",
+        "url": "/api/data",
+        "method": "GET",
+        "status_code": 200,
+        "severity": 1
+    },
+    {
+        "tenant": "Lumiq-thailand.com",
+        "source": "api",
+        "event_type": "logout",
+        "user": "TestUser1",
+        "ip": "192.168.1.201",
+        "url": "/logout",
+        "method": "POST",
+        "status_code": 200,
+        "severity": 1
+    }
+]

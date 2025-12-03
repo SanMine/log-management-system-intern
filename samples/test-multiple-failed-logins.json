@@ -1,0 +1,29 @@
+[
+    {
+        "tenant": "TestCorp.com",
+        "source": "web",
+        "event_type": "login_failed",
+        "user": "alice",
+        "ip": "203.0.113.10",
+        "severity": 3,
+        "action": "login"
+    },
+    {
+        "tenant": "TestCorp.com",
+        "source": "web",
+        "event_type": "login_failed",
+        "user": "alice",
+        "ip": "203.0.113.10",
+        "severity": 3,
+        "action": "login"
+    },
+    {
+        "tenant": "TestCorp.com",
+        "source": "web",
+        "event_type": "login_failed",
+        "user": "alice",
+        "ip": "203.0.113.10",
+        "severity": 3,
+        "action": "login"
+    }
+]

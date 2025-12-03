@@ -217,10 +217,10 @@ export const allAlerts: Alert[] = [
 ];
 
 export const timeRangeOptions = [
-    { value: '15m', label: 'Last 15 minutes' },
-    { value: '1h', label: 'Last 1 hour' },
-    { value: '24h', label: 'Last 24 hours' },
-    { value: '7d', label: 'Last 7 days' },
+    { value: 'last_15m', label: 'Last 15 minutes' },
+    { value: 'last_1h', label: 'Last 1 hour' },
+    { value: 'last_24h', label: 'Last 24 hours' },
+    { value: 'last_7d', label: 'Last 7 days' },
 ];
 
 export const sourceOptions = [
@@ -236,7 +236,7 @@ export const sourceOptions = [
 
 export const tenantOptions = [
     { value: 'all', label: 'All Tenants' },
-    { value: 'demoA', label: 'Demo A' },
-    { value: 'demoB', label: 'Demo B' },
-    { value: 'demoC', label: 'Demo C' },
+    { value: '1', label: 'Tenant 1' },
+    { value: '2', label: 'Tenant 2' },
+    { value: '3', label: 'Tenant 3' },
 ];

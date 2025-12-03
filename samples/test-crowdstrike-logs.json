@@ -1,0 +1,24 @@
+[
+    {
+        "tenant": "demoA.com",
+        "source": "crowdstrike",
+        "event_type": "malware_detected",
+        "host": "WIN10-01",
+        "process": "powershell.exe",
+        "severity": 8,
+        "sha256": "abc123def456...",
+        "action": "quarantine",
+        "@timestamp": "2025-08-20T08:00:00Z"
+    },
+    {
+        "tenant": "demoA.com",
+        "source": "crowdstrike",
+        "event_type": "suspicious_activity",
+        "host": "WIN10-02",
+        "process": "cmd.exe",
+        "user": "john",
+        "severity": 6,
+        "action": "alert",
+        "@timestamp": "2025-08-20T08:10:00Z"
+    }
+]

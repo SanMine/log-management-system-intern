@@ -1,0 +1,122 @@
+[
+    {
+        "tenant": "StandUP.com",
+        "source": "web",
+        "event_type": "login_success",
+        "user": "Alice",
+        "ip": "203.0.113.10",
+        "url": "/auth/login",
+        "method": "POST",
+        "status_code": 200,
+        "severity": 1,
+        "action": "login"
+    },
+    {
+        "tenant": "StandUP.com",
+        "source": "web",
+        "event_type": "page_view",
+        "user": "Alice",
+        "ip": "203.0.113.10",
+        "url": "/dashboard",
+        "method": "GET",
+        "status_code": 200,
+        "severity": 1,
+        "action": "view"
+    },
+    {
+        "tenant": "StandUP.com",
+        "source": "api",
+        "event_type": "create_meeting",
+        "user": "Bob",
+        "ip": "198.51.100.45",
+        "url": "/api/meetings",
+        "method": "POST",
+        "status_code": 201,
+        "severity": 2,
+        "action": "create"
+    },
+    {
+        "tenant": "StandUP.com",
+        "source": "web",
+        "event_type": "login_failed",
+        "user": "Charlie",
+        "ip": "192.0.2.88",
+        "url": "/auth/login",
+        "method": "POST",
+        "status_code": 401,
+        "severity": 4,
+        "action": "login"
+    },
+    {
+        "tenant": "StandUP.com",
+        "source": "api",
+        "event_type": "update_profile",
+        "user": "Alice",
+        "ip": "203.0.113.10",
+        "url": "/api/users/profile",
+        "method": "PUT",
+        "status_code": 200,
+        "severity": 2,
+        "action": "update"
+    },
+    {
+        "tenant": "StandUP.com",
+        "source": "web",
+        "event_type": "delete_meeting",
+        "user": "Bob",
+        "ip": "198.51.100.45",
+        "url": "/api/meetings/123",
+        "method": "DELETE",
+        "status_code": 200,
+        "severity": 3,
+        "action": "delete"
+    },
+    {
+        "tenant": "StandUP.com",
+        "source": "api",
+        "event_type": "invite_user",
+        "user": "Charlie",
+        "ip": "192.0.2.88",
+        "url": "/api/invitations",
+        "method": "POST",
+        "status_code": 201,
+        "severity": 2,
+        "action": "create"
+    },
+    {
+        "tenant": "StandUP.com",
+        "source": "web",
+        "event_type": "file_upload",
+        "user": "Alice",
+        "ip": "203.0.113.10",
+        "url": "/api/files",
+        "method": "POST",
+        "status_code": 201,
+        "severity": 2,
+        "action": "upload"
+    },
+    {
+        "tenant": "StandUP.com",
+        "source": "api",
+        "event_type": "api_error",
+        "user": "Bob",
+        "ip": "198.51.100.45",
+        "url": "/api/reports",
+        "method": "GET",
+        "status_code": 500,
+        "severity": 5,
+        "action": "error"
+    },
+    {
+        "tenant": "StandUP.com",
+        "source": "web",
+        "event_type": "logout",
+        "user": "Charlie",
+        "ip": "192.0.2.88",
+        "url": "/auth/logout",
+        "method": "POST",
+        "status_code": 200,
+        "severity": 1,
+        "action": "logout"
+    }
+]

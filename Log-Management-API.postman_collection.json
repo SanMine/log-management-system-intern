@@ -1,0 +1,522 @@
+{
+    "info": {
+        "name": "Log Management System - API Collection",
+        "description": "Complete API collection for testing the Log Management System",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{auth_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:5004/api",
+            "type": "string"
+        },
+        {
+            "key": "auth_token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "1. Authentication",
+            "item": [
+                {
+                    "name": "Login as Admin",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.collectionVariables.set(\"auth_token\", jsonData.token);",
+                                    "    pm.environment.set(\"auth_token\", jsonData.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@lumiq.com\",\n  \"password\": \"admin123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login as admin user to get authentication token"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login as Jimmy (Viewer)",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"jimmy@lumiq.com\",\n  \"password\": \"jimmy123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "2. Log Ingestion",
+            "item": [
+                {
+                    "name": "Ingest HTTP Log - Login Event",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tenant\": \"Lumiq-thailand.com\",\n  \"source\": \"api\",\n  \"event_type\": \"login_success\",\n  \"user\": \"testuser\",\n  \"ip\": \"203.0.113.50\",\n  \"timestamp\": \"2025-12-03T08:25:00Z\",\n  \"severity\": 1,\n  \"action\": \"login\",\n  \"url\": \"/api/auth/login\",\n  \"method\": \"POST\",\n  \"status_code\": 200\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/ingest/http",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ingest",
+                                "http"
+                            ]
+                        },
+                        "description": "Ingest a login success event via HTTP POST"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Ingest HTTP Log - Failed Login",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tenant\": \"Lumiq-thailand.com\",\n  \"source\": \"api\",\n  \"event_type\": \"login_failed\",\n  \"user\": \"attacker\",\n  \"ip\": \"198.51.100.50\",\n  \"timestamp\": \"2025-12-03T08:30:00Z\",\n  \"severity\": 4,\n  \"action\": \"login\",\n  \"url\": \"/api/auth/login\",\n  \"method\": \"POST\",\n  \"status_code\": 401\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/ingest/http",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ingest",
+                                "http"
+                            ]
+                        },
+                        "description": "Ingest a failed login attempt"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Ingest HTTP Log - API Request",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tenant\": \"Lumiq-thailand.com\",\n  \"source\": \"api\",\n  \"event_type\": \"api_request\",\n  \"user\": \"John\",\n  \"ip\": \"10.0.1.10\",\n  \"timestamp\": \"2025-12-03T08:35:00Z\",\n  \"severity\": 1,\n  \"action\": \"create\",\n  \"url\": \"/api/bookings\",\n  \"method\": \"POST\",\n  \"status_code\": 201\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/ingest/http",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ingest",
+                                "http"
+                            ]
+                        },
+                        "description": "Ingest an API request event"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Ingest HTTP Log - Page View",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tenant\": \"Lumiq-thailand.com\",\n  \"source\": \"api\",\n  \"event_type\": \"page_view\",\n  \"user\": \"Franco\",\n  \"ip\": \"192.168.1.55\",\n  \"timestamp\": \"2025-12-03T08:40:00Z\",\n  \"severity\": 1,\n  \"action\": \"view\",\n  \"url\": \"/dashboard\",\n  \"method\": \"GET\",\n  \"status_code\": 200\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/ingest/http",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "ingest",
+                                "http"
+                            ]
+                        },
+                        "description": "Ingest a page view event"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "3. Dashboard",
+            "item": [
+                {
+                    "name": "Get Dashboard - All Tenants",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/dashboard?tenantId=all&timeRange=24h",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "dashboard"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenantId",
+                                    "value": "all"
+                                },
+                                {
+                                    "key": "timeRange",
+                                    "value": "24h"
+                                }
+                            ]
+                        },
+                        "description": "Get dashboard data for all tenants"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Dashboard - Specific Tenant",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/dashboard?tenantId=1&timeRange=7d",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "dashboard"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenantId",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "timeRange",
+                                    "value": "7d"
+                                }
+                            ]
+                        },
+                        "description": "Get dashboard data for Lumiq-thailand.com (tenant 1)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "4. Alerts",
+            "item": [
+                {
+                    "name": "Get All Alerts",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/alerts?tenantId=all&status=all&timeRange=24h",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "alerts"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenantId",
+                                    "value": "all"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "all"
+                                },
+                                {
+                                    "key": "timeRange",
+                                    "value": "24h"
+                                }
+                            ]
+                        },
+                        "description": "Get all alerts"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Open Alerts Only",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/alerts?tenantId=all&status=OPEN&timeRange=7d",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "alerts"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenantId",
+                                    "value": "all"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "OPEN"
+                                },
+                                {
+                                    "key": "timeRange",
+                                    "value": "7d"
+                                }
+                            ]
+                        },
+                        "description": "Get only OPEN alerts"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "5. Users & Activity",
+            "item": [
+                {
+                    "name": "Get Users List",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users?tenantId=1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "users"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenantId",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "description": "Get list of users for a tenant"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get User Activity - Jimmy",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users/Jimmy/activity?tenantId=1&timeRange=24h",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "users",
+                                "Jimmy",
+                                "activity"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenantId",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "timeRange",
+                                    "value": "24h"
+                                }
+                            ]
+                        },
+                        "description": "Get activity data for user Jimmy"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get User Activity - John",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users/John/activity?tenantId=1&timeRange=7d",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "users",
+                                "John",
+                                "activity"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenantId",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "timeRange",
+                                    "value": "7d"
+                                }
+                            ]
+                        },
+                        "description": "Get activity data for user John"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "6. Tenants",
+            "item": [
+                {
+                    "name": "Get All Tenants",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/tenants",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "tenants"
+                            ]
+                        },
+                        "description": "Get list of all tenants (Admin sees all, Viewer sees only their tenant)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Specific Tenant",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/tenants/1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "tenants",
+                                "1"
+                            ]
+                        },
+                        "description": "Get details for tenant ID 1 (Lumiq-thailand.com)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "7. Health Check",
+            "item": [
+                {
+                    "name": "Health Check",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/health",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        },
+                        "description": "Check if the API is running"
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}

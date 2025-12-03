@@ -5,9 +5,169 @@
 @layer base {
   :root {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+
+    /* Shadcn System Colors - Mapped to Slate & Royal Palette */
+    --background: 210 40% 98%;
+    /* slate-50 */
+    --foreground: 222 47% 11%;
+    /* slate-900 */
+
+    --card: 0 0% 100%;
+    /* white */
+    --card-foreground: 222 47% 11%;
+    /* slate-900 */
+
+    --popover: 0 0% 100%;
+    /* white */
+    --popover-foreground: 222 47% 11%;
+    /* slate-900 */
+
+    --primary: 221 83% 53%;
+    /* brand-600 (Royal Blue) */
+    --primary-foreground: 210 40% 98%;
+    /* slate-50 */
+
+    --secondary: 210 40% 96.1%;
+    /* slate-100 */
+    --secondary-foreground: 222 47% 11%;
+    /* slate-900 */
+
+    --muted: 210 40% 96.1%;
+    /* slate-100 */
+    --muted-foreground: 215 16% 47%;
+    /* slate-500 */
+
+    --accent: 210 40% 96.1%;
+    /* slate-100 */
+    --accent-foreground: 222 47% 11%;
+    /* slate-900 */
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    /* slate-200 */
+    --input: 214.3 31.8% 91.4%;
+    /* slate-200 */
+    --ring: 221 83% 53%;
+    /* brand-600 */
+
+    --radius: 0.75rem;
   }
-  
+
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-slate-50 text-slate-800;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply text-slate-900 font-bold tracking-tight;
+  }
+
+  * {
+    @apply transition-colors duration-200;
+  }
+}
+
+@layer components {
+
+  /* Clean Card Styles */
+  .card-premium {
+    @apply bg-white border border-slate-200 shadow-sm rounded-xl transition-all duration-200;
+  }
+
+  .card-premium:hover {
+    @apply shadow-md border-slate-300 transform -translate-y-[2px];
+  }
+
+  /* Glass effect - subtle only */
+  .glass-subtle {
+    @apply bg-white/90 backdrop-blur-sm border-b border-slate-200;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-mono-600 to-mono-500 bg-clip-text text-transparent;
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .card-hover:hover {
+    @apply shadow-xl shadow-mono-300/50 -translate-y-1;
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(90deg,
+        #f0f0f0 0%,
+        #e0e0e0 20%,
+        #f0f0f0 40%,
+        #f0f0f0 100%);
+    background-size: 1000px 100%;
+    @apply animate-shimmer;
+  }
+
+  /* Smooth focus ring */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-mono-500 focus:ring-offset-2 transition-all duration-200;
+  }
+
+  /* Gradient background utilities */
+  .gradient-bg {
+    @apply bg-gradient-to-br from-white to-mono-50;
+  }
+
+  .gradient-primary {
+    @apply bg-gradient-to-r from-mono-500 to-mono-600;
+  }
+
+  /* Alert Status Gradients */
+  .gradient-danger {
+    @apply bg-gradient-to-r from-red-500 to-red-600;
+  }
+
+  .gradient-warning {
+    @apply bg-gradient-to-r from-yellow-500 to-orange-500;
+  }
+
+  .gradient-success {
+    @apply bg-gradient-to-r from-green-500 to-emerald-500;
+  }
+}
+
+@layer utilities {
+
+  /* Animation delays for staggered effects */
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .transition-fast {
+    @apply transition-all duration-150 ease-out;
   }
 }

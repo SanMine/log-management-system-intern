@@ -7,61 +7,91 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { IPDisplay } from '@/components/alerts/IPDisplay';
 import type { Alert } from '@/data/mockData';
+import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
 
 interface AlertsTableProps {
     alerts: Alert[];
 }
 
 export function AlertsTable({ alerts }: AlertsTableProps) {
-    const getStatusColor = (status: string) => {
+    const getStatusConfig = (status: string) => {
         switch (status) {
             case 'OPEN':
-                return 'bg-alert-red text-white hover:bg-alert-red';
+                return {
+                    class: 'gradient-danger text-white border-0',
+                    icon: AlertCircle
+                };
             case 'INVESTIGATING':
-                return 'bg-alert-lightRed text-white hover:bg-alert-lightRed';
+                return {
+                    class: 'gradient-warning text-white border-0',
+                    icon: Clock
+                };
             case 'RESOLVED':
-                return 'bg-green-600 text-white hover:bg-green-600';
+                return {
+                    class: 'gradient-success text-white border-0',
+                    icon: CheckCircle
+                };
             default:
-                return 'bg-gray-500 text-white hover:bg-gray-500';
+                return {
+                    class: 'bg-gray-500 text-white',
+                    icon: AlertCircle
+                };
         }
     };
 
     return (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="glass-strong rounded-xl border-mono-200 overflow-hidden shadow-lg shadow-mono-300/20">
             <Table>
                 <TableHeader>
-                    <TableRow className="bg-gray-50">
-                        <TableHead className="font-semibold">Time</TableHead>
-                        <TableHead className="font-semibold">Rule Name</TableHead>
-                        <TableHead className="font-semibold">Tenant</TableHead>
-                        <TableHead className="font-semibold">IP</TableHead>
-                        <TableHead className="font-semibold">User</TableHead>
-                        <TableHead className="font-semibold">Count</TableHead>
-                        <TableHead className="font-semibold">Status</TableHead>
+                    <TableRow className="bg-gradient-to-r from-mono-100 to-transparent border-mono-200 hover:bg-gradient-to-r hover:from-mono-100 hover:to-transparent">
+                        <TableHead className="font-semibold text-gray-700">Time</TableHead>
+                        <TableHead className="font-semibold text-gray-700">Rule Name</TableHead>
+                        <TableHead className="font-semibold text-gray-700">Tenant</TableHead>
+                        <TableHead className="font-semibold text-gray-700">IP</TableHead>
+                        <TableHead className="font-semibold text-gray-700">User</TableHead>
+                        <TableHead className="font-semibold text-gray-700">Count</TableHead>
+                        <TableHead className="font-semibold text-gray-700">Status</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {alerts.map((alert) => (
-                        <TableRow
-                            key={alert.id}
-                            className="hover:bg-gray-50 cursor-pointer"
-                        >
-                            <TableCell className="font-medium text-sm">
-                                {alert.time}
-                            </TableCell>
-                            <TableCell>{alert.ruleName}</TableCell>
-                            <TableCell>{alert.tenant}</TableCell>
-                            <TableCell className="font-mono text-sm">{alert.ip}</TableCell>
-                            <TableCell>{alert.user}</TableCell>
-                            <TableCell className="font-semibold">{alert.count}</TableCell>
-                            <TableCell>
-                                <Badge className={getStatusColor(alert.status)}>
-                                    {alert.status}
-                                </Badge>
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                    {alerts.map((alert) => {
+                        const statusConfig = getStatusConfig(alert.status);
+                        const StatusIcon = statusConfig.icon;
+
+                        return (
+                            <TableRow
+                                key={alert.id}
+                                className="cursor-pointer border-mono-200 hover:bg-mono-100/50 transition-all duration-200 group"
+                            >
+                                <TableCell className="font-medium text-sm text-gray-600 group-hover:text-mono-600 transition-colors">
+                                    {alert.time}
+                                </TableCell>
+                                <TableCell className="group-hover:text-mono-600 transition-colors font-medium">
+                                    {alert.ruleName}
+                                </TableCell>
+                                <TableCell className="text-gray-600 group-hover:text-mono-600 transition-colors">
+                                    {alert.tenant}
+                                </TableCell>
+                                <TableCell>
+                                    <IPDisplay alert={alert} />
+                                </TableCell>
+                                <TableCell className="text-gray-600 group-hover:text-mono-600 transition-colors">
+                                    {alert.user}
+                                </TableCell>
+                                <TableCell className="font-semibold text-mono-600">
+                                    {alert.count}
+                                </TableCell>
+                                <TableCell>
+                                    <Badge className={`${statusConfig.class} transition-all duration-200 group-hover:shadow-md flex items-center gap-1 w-fit`}>
+                                        <StatusIcon className="h-3 w-3" />
+                                        {alert.status}
+                                    </Badge>
+                                </TableCell>
+                            </TableRow>
+                        );
+                    })}
                 </TableBody>
             </Table>
         </div>

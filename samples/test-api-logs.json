@@ -1,0 +1,20 @@
+[
+    {
+        "tenant": "demo.com",
+        "source": "api",
+        "event_type": "app_login_failed",
+        "user": "alice",
+        "ip": "203.0.113.7",
+        "reason": "wrong password",
+        "@timestamp": "2025-08-20T07:20:00Z"
+    },
+    {
+        "tenant": "demo.com",
+        "source": "api",
+        "event_type": "user_created",
+        "user": "admin",
+        "action": "create",
+        "severity": 5,
+        "@timestamp": "2025-08-20T07:25:00Z"
+    }
+]

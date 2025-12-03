@@ -3,78 +3,178 @@ import { FilterBar } from '@/components/dashboard/FilterBar';
 import { SummaryCard } from '@/components/dashboard/SummaryCard';
 import { TimelineChart } from '@/components/dashboard/TimelineChart';
 import { TopListWidget } from '@/components/dashboard/TopListWidget';
-import { RecentAlerts } from '@/components/dashboard/RecentAlerts';
-import { summaryStats, topIPs, topUsers } from '@/data/mockData';
+import { UploadJsonDialog } from '@/components/dashboard/UploadJsonDialog';
+// import { RecentAlerts } from '@/components/dashboard/RecentAlerts'; // Commented out - not used
+import { dashboardAPI } from '@/services/api';
 import { Activity, Server, Users, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export function DashboardPage() {
-    const topIPItems = topIPs.map((item) => ({
-        label: item.ip,
-        value: item.events,
-    }));
+    const [selectedTenant, setSelectedTenant] = useState('all');
+    const [timeRange, setTimeRange] = useState('last_24h');
+    const [dashboardData, setDashboardData] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    const topUserItems = topUsers.map((item) => ({
+    // Fetch dashboard data when tenant or timeRange changes
+    useEffect(() => {
+        async function fetchData() {
+            setIsLoading(true);
+            setError('');
+            try {
+                const data = await dashboardAPI.getData(selectedTenant, timeRange);
+                setDashboardData(data);
+            } catch (err: any) {
+                setError(err.message || 'Failed to load dashboard data');
+                console.error('Dashboard fetch error:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchData();
+    }, [selectedTenant, timeRange]);
+
+    // Refresh function for after upload
+    const handleRefreshData = () => {
+        // Just update state to trigger useEffect
+        setSelectedTenant(prev => prev);
+    };
+
+    // Loading state
+    if (isLoading) {
+        return (
+            <DashboardLayout>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto mb-4"></div>
+                        <p className="text-slate-600">Loading dashboard...</p>
+                    </div>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
+    // Error state
+    if (error || !dashboardData) {
+        return (
+            <DashboardLayout>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <div className="text-center">
+                        <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                        <p className="text-slate-900 font-semibold mb-2">Failed to load dashboard</p>
+                        <p className="text-slate-600">{error}</p>
+                    </div>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
+    const topIPItems = dashboardData.topIps?.map((item: any) => ({
+        label: item.ip,
+        value: item.count,
+    })) || [];
+
+    const topUserItems = dashboardData.topUsers?.map((item: any) => ({
         label: item.user,
-        value: item.events,
-    }));
+        value: item.count,
+    })) || [];
+
+    const topEventTypeItems = dashboardData.topEventTypes?.map((item: any) => ({
+        label: item.event_type,
+        value: item.count,
+    })) || [];
 
     return (
         <DashboardLayout>
             <div className="space-y-6">
                 {/* Page Title */}
-                <div>
-                    <h2 className="text-3xl font-bold text-primary-dark">Admin Dashboard</h2>
-                    <p className="text-gray-600 mt-1">Monitor and analyze system logs in real-time</p>
+                <div className="animate-slide-up">
+                    <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+                        Admin Dashboard
+                    </h2>
+                    <p className="text-slate-500 mt-1">Monitor and analyze system logs in real-time</p>
                 </div>
 
-                {/* Filter Bar */}
-                <FilterBar />
+                {/* Upload Button and Filter Bar */}
+                <div className="space-y-4">
+                    <UploadJsonDialog onUploadSuccess={handleRefreshData} />
+                    <FilterBar
+                        tenant={selectedTenant}
+                        onTenantChange={setSelectedTenant}
+                        timeRange={timeRange}
+                        onTimeRangeChange={setTimeRange}
+                    />
+                </div>
 
-                {/* Summary Cards */}
+                {/* Summary Cards with staggered animation */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <SummaryCard
-                        title="Total Events"
-                        value={summaryStats.totalEvents}
-                        icon={Activity}
-                    />
-                    <SummaryCard
-                        title="Unique IPs"
-                        value={summaryStats.uniqueIPs}
-                        icon={Server}
-                    />
-                    <SummaryCard
-                        title="Unique Users"
-                        value={summaryStats.uniqueUsers}
-                        icon={Users}
-                    />
-                    <SummaryCard
-                        title="Total Alerts"
-                        value={summaryStats.totalAlerts}
-                        icon={AlertTriangle}
-                    />
+                    <div className="animate-slide-up">
+                        <SummaryCard
+                            title="Total Events"
+                            value={dashboardData.totalEvents}
+                            icon={Activity}
+                        />
+                    </div>
+                    <div className="animate-slide-up delay-100">
+                        <SummaryCard
+                            title="Unique IPs"
+                            value={dashboardData.uniqueIps}
+                            icon={Server}
+                        />
+                    </div>
+                    <div className="animate-slide-up delay-200">
+                        <SummaryCard
+                            title="Unique Users"
+                            value={dashboardData.uniqueUsers}
+                            icon={Users}
+                        />
+                    </div>
+                    <div className="animate-slide-up delay-300">
+                        <SummaryCard
+                            title="Total Alerts"
+                            value={dashboardData.totalAlerts}
+                            icon={AlertTriangle}
+                        />
+                    </div>
                 </div>
 
                 {/* Timeline Chart */}
-                <TimelineChart />
-
-                {/* Top Lists */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <TopListWidget
-                        title="Top IPs"
-                        items={topIPItems}
-                        labelHeader="IP Address"
-                        valueHeader="Events"
-                    />
-                    <TopListWidget
-                        title="Top Users"
-                        items={topUserItems}
-                        labelHeader="User"
-                        valueHeader="Events"
-                    />
+                <div className="animate-slide-up delay-400">
+                    <TimelineChart data={dashboardData.eventsOverTime} />
                 </div>
 
-                {/* Recent Alerts */}
-                <RecentAlerts />
+                {/* Top Lists - 3 columns on large screens */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="animate-slide-up delay-100">
+                        <TopListWidget
+                            title="Top IPs"
+                            items={topIPItems}
+                            labelHeader="IP Address"
+                            valueHeader="Events"
+                        />
+                    </div>
+                    <div className="animate-slide-up delay-200">
+                        <TopListWidget
+                            title="Top Users"
+                            items={topUserItems}
+                            labelHeader="User"
+                            valueHeader="Events"
+                        />
+                    </div>
+                    <div className="animate-slide-up delay-300">
+                        <TopListWidget
+                            title="Top Event Types"
+                            items={topEventTypeItems}
+                            labelHeader="Event Type"
+                            valueHeader="Events"
+                        />
+                    </div>
+                </div>
+
+                {/* Recent Alerts - Commented out: backend doesn't return recentAlerts */}
+                {/* <div className="animate-slide-up delay-300">
+                    <RecentAlerts alerts={dashboardData.recentAlerts} />
+                </div> */}
             </div>
         </DashboardLayout>
     );

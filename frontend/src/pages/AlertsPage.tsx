@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { AlertsTable } from '@/components/alerts/AlertsTable';
 import {
@@ -8,35 +8,74 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { allAlerts, timeRangeOptions, tenantOptions } from '@/data/mockData';
+import { alertsAPI } from '@/services/api';
+import { timeRangeOptions } from '@/data/mockData';
+import { AlertTriangle } from 'lucide-react';
+import { useTenants } from '@/hooks/useTenants';
 
 export function AlertsPage() {
     const [timeRange, setTimeRange] = useState('24h');
     const [tenant, setTenant] = useState('all');
+    const [selectedStatus, setSelectedStatus] = useState('all');
+    const [alerts, setAlerts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+    const { tenants: tenantOptions } = useTenants();
+
+    // Fetch alerts when filters change
+    useEffect(() => {
+        async function fetchAlerts() {
+            setIsLoading(true);
+            setError('');
+            try {
+                const data = await alertsAPI.getAlerts(tenant, selectedStatus, timeRange);
+                setAlerts(data);
+            } catch (err: any) {
+                setError(err.message || 'Failed to load alerts');
+                console.error('Alerts fetch error:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchAlerts();
+    }, [tenant, selectedStatus, timeRange]);
+
+    const statusOptions = [
+        { value: 'all', label: 'All Status' },
+        { value: 'OPEN', label: 'Open' },
+        { value: 'INVESTIGATING', label: 'Investigating' },
+        { value: 'RESOLVED', label: 'Resolved' },
+    ];
 
     return (
         <DashboardLayout>
             <div className="space-y-6">
                 {/* Page Title */}
-                <div>
-                    <h2 className="text-3xl font-bold text-primary-dark">Alerts Management</h2>
-                    <p className="text-gray-600 mt-1">View and manage security alerts</p>
+                <div className="animate-slide-up">
+                    <h2 className="text-4xl font-bold bg-gradient-to-r from-mono-600 to-mono-500 bg-clip-text text-transparent">
+                        Alerts Management
+                    </h2>
+                    <p className="text-gray-600 mt-2">View and manage security alerts</p>
                 </div>
 
                 {/* Filter Bar */}
-                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="glass-strong rounded-xl p-6 border-mono-200 shadow-lg shadow-mono-300/20 animate-slide-up delay-100">
                     <div className="flex flex-wrap gap-4 items-center">
                         <div className="flex-1 min-w-[200px]">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
                                 Time Range
                             </label>
                             <Select value={timeRange} onValueChange={setTimeRange}>
-                                <SelectTrigger className="w-full">
+                                <SelectTrigger className="w-full border-mono-300 focus:ring-mono-500 bg-white/80 hover:bg-white transition-colors">
                                     <SelectValue placeholder="Select time range" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="animate-slide-down">
                                     {timeRangeOptions.map((option) => (
-                                        <SelectItem key={option.value} value={option.value}>
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                            className="cursor-pointer hover:bg-mono-100 transition-colors"
+                                        >
                                             {option.label}
                                         </SelectItem>
                                     ))}
@@ -45,16 +84,42 @@ export function AlertsPage() {
                         </div>
 
                         <div className="flex-1 min-w-[200px]">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Status
+                            </label>
+                            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                                <SelectTrigger className="w-full border-mono-300 focus:ring-mono-500 bg-white/80 hover:bg-white transition-colors">
+                                    <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent className="animate-slide-down">
+                                    {statusOptions.map((option) => (
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                            className="cursor-pointer hover:bg-mono-100 transition-colors"
+                                        >
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="flex-1 min-w-[200px]">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
                                 Tenant
                             </label>
                             <Select value={tenant} onValueChange={setTenant}>
-                                <SelectTrigger className="w-full">
+                                <SelectTrigger className="w-full border-mono-300 focus:ring-mono-500 bg-white/80 hover:bg-white transition-colors">
                                     <SelectValue placeholder="Select tenant" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="animate-slide-down">
                                     {tenantOptions.map((option) => (
-                                        <SelectItem key={option.value} value={option.value}>
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                            className="cursor-pointer hover:bg-mono-100 transition-colors"
+                                        >
                                             {option.label}
                                         </SelectItem>
                                     ))}
@@ -65,12 +130,40 @@ export function AlertsPage() {
                 </div>
 
                 {/* Alerts Count */}
-                <div className="text-sm text-gray-600">
-                    Showing <span className="font-semibold">{allAlerts.length}</span> alerts
-                </div>
+                {!isLoading && !error && (
+                    <div className="text-sm text-gray-600 animate-fade-in delay-200 flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-mono-500 animate-pulse" />
+                        Showing <span className="font-semibold text-mono-600">{alerts.length}</span> alerts
+                    </div>
+                )}
+
+                {/* Loading State */}
+                {isLoading && (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto mb-4"></div>
+                            <p className="text-slate-600">Loading alerts...</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Error State */}
+                {error && !isLoading && (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                            <p className="text-slate-900 font-semibold mb-2">Failed to load alerts</p>
+                            <p className="text-slate-600">{error}</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Alerts Table */}
-                <AlertsTable alerts={allAlerts} />
+                {!isLoading && !error && (
+                    <div className="animate-slide-up delay-300">
+                        <AlertsTable alerts={alerts} />
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );

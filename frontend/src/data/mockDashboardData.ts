@@ -1,0 +1,304 @@
+// Mock dashboard data for different tenants
+export interface DashboardData {
+    totalEvents: number;
+    uniqueIps: number;
+    uniqueUsers: number;
+    totalAlerts: number;
+    eventsOverTime: { time: string; events: number }[];
+    topIps: { ip: string; count: number }[];
+    topUsers: { user: string; count: number }[];
+    topEventTypes: { event_type: string; count: number }[];
+    recentAlerts: {
+        id: string;
+        time: string;
+        ruleName: string;
+        ip: string;
+        user: string;
+        count: number;
+        status: 'OPEN' | 'INVESTIGATING' | 'RESOLVED';
+    }[];
+}
+
+export const mockDashboardData: Record<string, DashboardData> = {
+    all: {
+        totalEvents: 45678,
+        uniqueIps: 1234,
+        uniqueUsers: 567,
+        totalAlerts: 23,
+        eventsOverTime: [
+            { time: '09:00', events: 245 },
+            { time: '09:15', events: 312 },
+            { time: '09:30', events: 289 },
+            { time: '09:45', events: 356 },
+            { time: '10:00', events: 423 },
+            { time: '10:15', events: 398 },
+            { time: '10:30', events: 445 },
+            { time: '10:45', events: 512 },
+            { time: '11:00', events: 478 },
+            { time: '11:15', events: 534 },
+            { time: '11:30', events: 489 },
+            { time: '11:45', events: 456 },
+            { time: '12:00', events: 423 },
+            { time: '12:15', events: 367 },
+            { time: '12:30', events: 334 },
+        ],
+        topIps: [
+            { ip: '203.0.113.7', count: 158 },
+            { ip: '10.0.1.10', count: 142 },
+            { ip: '192.168.1.55', count: 128 },
+            { ip: '172.16.0.23', count: 115 },
+            { ip: '10.10.10.45', count: 98 },
+        ],
+        topUsers: [
+            { user: 'alice', count: 130 },
+            { user: 'bob', count: 120 },
+            { user: 'charlie', count: 98 },
+            { user: 'diana', count: 87 },
+            { user: 'eve', count: 65 },
+        ],
+        topEventTypes: [
+            { event_type: 'login_failed', count: 120 },
+            { event_type: 'UserLoggedIn', count: 95 },
+            { event_type: 'malware_detected', count: 34 },
+            { event_type: 'CreateUser', count: 12 },
+            { event_type: 'LogonFailed', count: 9 },
+        ],
+        recentAlerts: [
+            {
+                id: '1',
+                time: '2025-12-02 21:30:01',
+                ruleName: 'Failed Login Burst',
+                ip: '203.0.113.7',
+                user: 'eve',
+                count: 6,
+                status: 'OPEN',
+            },
+            {
+                id: '2',
+                time: '2025-12-02 21:25:15',
+                ruleName: 'Suspicious API Access',
+                ip: '10.0.1.10',
+                user: 'bob',
+                count: 12,
+                status: 'INVESTIGATING',
+            },
+            {
+                id: '3',
+                time: '2025-12-02 21:20:43',
+                ruleName: 'Multiple Source Login',
+                ip: '192.168.1.55',
+                user: 'alice',
+                count: 4,
+                status: 'OPEN',
+            },
+        ],
+    },
+    'A.website.com': {
+        totalEvents: 18542,
+        uniqueIps: 456,
+        uniqueUsers: 234,
+        totalAlerts: 8,
+        eventsOverTime: [
+            { time: '09:00', events: 98 },
+            { time: '09:15', events: 125 },
+            { time: '09:30', events: 116 },
+            { time: '09:45', events: 142 },
+            { time: '10:00', events: 169 },
+            { time: '10:15', events: 159 },
+            { time: '10:30', events: 178 },
+            { time: '10:45', events: 205 },
+            { time: '11:00', events: 191 },
+            { time: '11:15', events: 214 },
+            { time: '11:30', events: 196 },
+            { time: '11:45', events: 182 },
+            { time: '12:00', events: 169 },
+            { time: '12:15', events: 147 },
+            { time: '12:30', events: 134 },
+        ],
+        topIps: [
+            { ip: '203.0.113.7', count: 64 },
+            { ip: '192.168.1.55', count: 51 },
+            { ip: '10.0.1.10', count: 57 },
+            { ip: '172.16.0.23', count: 46 },
+            { ip: '10.10.10.45', count: 39 },
+        ],
+        topUsers: [
+            { user: 'alice', count: 52 },
+            { user: 'bob', count: 48 },
+            { user: 'charlie', count: 39 },
+            { user: 'diana', count: 35 },
+            { user: 'frank', count: 26 },
+        ],
+        topEventTypes: [
+            { event_type: 'UserLoggedIn', count: 48 },
+            { event_type: 'login_failed', count: 38 },
+            { event_type: 'CreateUser', count: 5 },
+            { event_type: 'LogonFailed', count: 3 },
+            { event_type: 'PasswordChange', count: 2 },
+        ],
+        recentAlerts: [
+            {
+                id: '1',
+                time: '2025-12-02 21:30:01',
+                ruleName: 'Failed Login Burst',
+                ip: '203.0.113.7',
+                user: 'alice',
+                count: 3,
+                status: 'OPEN',
+            },
+            {
+                id: '2',
+                time: '2025-12-02 21:15:22',
+                ruleName: 'Unusual Data Transfer',
+                ip: '192.168.1.55',
+                user: 'bob',
+                count: 2,
+                status: 'INVESTIGATING',
+            },
+        ],
+    },
+    'B.website.com': {
+        totalEvents: 15234,
+        uniqueIps: 389,
+        uniqueUsers: 178,
+        totalAlerts: 7,
+        eventsOverTime: [
+            { time: '09:00', events: 82 },
+            { time: '09:15', events: 104 },
+            { time: '09:30', events: 96 },
+            { time: '09:45', events: 118 },
+            { time: '10:00', events: 141 },
+            { time: '10:15', events: 132 },
+            { time: '10:30', events: 148 },
+            { time: '10:45', events: 171 },
+            { time: '11:00', events: 159 },
+            { time: '11:15', events: 178 },
+            { time: '11:30', events: 163 },
+            { time: '11:45', events: 151 },
+            { time: '12:00', events: 141 },
+            { time: '12:15', events: 122 },
+            { time: '12:30', events: 111 },
+        ],
+        topIps: [
+            { ip: '10.0.1.10', count: 46 },
+            { ip: '172.16.0.23', count: 39 },
+            { ip: '203.0.113.7', count: 35 },
+            { ip: '10.10.10.45', count: 28 },
+            { ip: '192.168.2.100', count: 22 },
+        ],
+        topUsers: [
+            { user: 'bob', count: 38 },
+            { user: 'diana', count: 32 },
+            { user: 'charlie', count: 29 },
+            { user: 'grace', count: 24 },
+            { user: 'henry', count: 18 },
+        ],
+        topEventTypes: [
+            { event_type: 'login_failed', count: 44 },
+            { event_type: 'UserLoggedIn', count: 28 },
+            { event_type: 'malware_detected', count: 15 },
+            { event_type: 'FileAccess', count: 8 },
+            { event_type: 'CreateUser', count: 4 },
+        ],
+        recentAlerts: [
+            {
+                id: '1',
+                time: '2025-12-02 21:25:15',
+                ruleName: 'Suspicious API Access',
+                ip: '10.0.1.10',
+                user: 'bob',
+                count: 5,
+                status: 'INVESTIGATING',
+            },
+            {
+                id: '2',
+                time: '2025-12-02 21:10:05',
+                ruleName: 'Malware Detected',
+                ip: '172.16.0.23',
+                user: 'diana',
+                count: 3,
+                status: 'OPEN',
+            },
+        ],
+    },
+    'C.website.com': {
+        totalEvents: 11902,
+        uniqueIps: 389,
+        uniqueUsers: 155,
+        totalAlerts: 8,
+        eventsOverTime: [
+            { time: '09:00', events: 65 },
+            { time: '09:15', events: 83 },
+            { time: '09:30', events: 77 },
+            { time: '09:45', events: 96 },
+            { time: '10:00', events: 113 },
+            { time: '10:15', events: 107 },
+            { time: '10:30', events: 119 },
+            { time: '10:45', events: 136 },
+            { time: '11:00', events: 128 },
+            { time: '11:15', events: 142 },
+            { time: '11:30', events: 130 },
+            { time: '11:45', events: 123 },
+            { time: '12:00', events: 113 },
+            { time: '12:15', events: 98 },
+            { time: '12:30', events: 89 },
+        ],
+        topIps: [
+            { ip: '192.168.1.55', count: 39 },
+            { ip: '10.10.10.45', count: 31 },
+            { ip: '203.0.113.7', count: 27 },
+            { ip: '172.16.0.88', count: 23 },
+            { ip: '10.0.2.50', count: 18 },
+        ],
+        topUsers: [
+            { user: 'charlie', count: 30 },
+            { user: 'eve', count: 27 },
+            { user: 'alice', count: 23 },
+            { user: 'ivan', count: 19 },
+            { user: 'judy', count: 14 },
+        ],
+        topEventTypes: [
+            { event_type: 'malware_detected', count: 19 },
+            { event_type: 'login_failed', count: 38 },
+            { event_type: 'UserLoggedIn', count: 19 },
+            { event_type: 'LogonFailed', count: 6 },
+            { event_type: 'SecurityScan', count: 3 },
+        ],
+        recentAlerts: [
+            {
+                id: '1',
+                time: '2025-12-02 21:20:43',
+                ruleName: 'Multiple Source Login',
+                ip: '192.168.1.55',
+                user: 'charlie',
+                count: 4,
+                status: 'OPEN',
+            },
+            {
+                id: '2',
+                time: '2025-12-02 21:05:30',
+                ruleName: 'Malware Scan Alert',
+                ip: '10.10.10.45',
+                user: 'eve',
+                count: 2,
+                status: 'INVESTIGATING',
+            },
+            {
+                id: '3',
+                time: '2025-12-02 20:55:47',
+                ruleName: 'Failed MFA Attempts',
+                ip: '203.0.113.7',
+                user: 'alice',
+                count: 3,
+                status: 'OPEN',
+            },
+        ],
+    },
+};
+
+export const tenantOptions = [
+    { value: 'all', label: 'All Tenants' },
+    { value: '1', label: 'Tenant 1' },
+    { value: '2', label: 'Tenant 2' },
+    { value: '3', label: 'Tenant 3' },
+];

@@ -1,0 +1,33 @@
+[
+    {
+        "tenant": "demoA.com",
+        "source": "ad",
+        "event_id": 4625,
+        "event_type": "LogonFailed",
+        "user": "demo\\eve",
+        "host": "DC01",
+        "ip": "203.0.113.77",
+        "logon_type": 3,
+        "@timestamp": "2025-08-20T11:11:11Z"
+    },
+    {
+        "tenant": "demoA.com",
+        "source": "ad",
+        "event_id": 4624,
+        "event_type": "LogonSuccess",
+        "user": "demo\\admin",
+        "host": "DC01",
+        "ip": "192.168.1.100",
+        "logon_type": 2,
+        "@timestamp": "2025-08-20T11:12:00Z"
+    },
+    {
+        "tenant": "demoA.com",
+        "source": "ad",
+        "event_id": 4720,
+        "event_type": "UserCreated",
+        "user": "demo\\new_user",
+        "host": "DC01",
+        "@timestamp": "2025-08-20T11:15:00Z"
+    }
+]

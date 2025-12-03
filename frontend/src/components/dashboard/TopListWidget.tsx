@@ -22,26 +22,31 @@ interface TopListWidgetProps {
 
 export function TopListWidget({ title, items, labelHeader, valueHeader }: TopListWidgetProps) {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-lg font-semibold text-primary-dark">
+        <Card className="card-premium animate-slide-up overflow-hidden">
+            <CardHeader className="border-b border-slate-100 bg-slate-50/50">
+                <CardTitle className="text-lg font-bold text-slate-800">
                     {title}
                 </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>{labelHeader}</TableHead>
-                            <TableHead className="text-right">{valueHeader}</TableHead>
+                        <TableRow className="bg-slate-50 hover:bg-slate-50 border-slate-100">
+                            <TableHead className="font-semibold text-slate-600 pl-6">{labelHeader}</TableHead>
+                            <TableHead className="text-right font-semibold text-slate-600 pr-6">{valueHeader}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {items.map((item, index) => (
-                            <TableRow key={index}>
-                                <TableCell className="font-medium">{item.label}</TableCell>
-                                <TableCell className="text-right font-semibold">
-                                    {item.value}
+                            <TableRow
+                                key={index}
+                                className="border-slate-100 hover:bg-slate-50/80 transition-colors"
+                            >
+                                <TableCell className="font-medium text-slate-700 pl-6">
+                                    {item.label}
+                                </TableCell>
+                                <TableCell className="text-right font-semibold text-brand-600 pr-6">
+                                    {item.value.toLocaleString()}
                                 </TableCell>
                             </TableRow>
                         ))}
