@@ -14,6 +14,9 @@ export function DashboardPage() {
     const [dashboardData, setDashboardData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
+    const REFRESH_INTERVAL = 30000; // 30 seconds
 
     useEffect(() => {
         async function fetchData() {
@@ -22,6 +25,7 @@ export function DashboardPage() {
             try {
                 const data = await dashboardAPI.getData(selectedTenant, timeRange);
                 setDashboardData(data);
+                setLastUpdated(new Date());
             } catch (err: any) {
                 setError(err.message || 'Failed to load dashboard data');
                 console.error('Dashboard fetch error:', err);
@@ -29,7 +33,16 @@ export function DashboardPage() {
                 setIsLoading(false);
             }
         }
+
         fetchData();
+
+        // Auto-refresh interval
+        const intervalId = setInterval(() => {
+            fetchData();
+        }, REFRESH_INTERVAL);
+
+        // Cleanup interval on unmount
+        return () => clearInterval(intervalId);
     }, [selectedTenant, timeRange]);
 
     const handleRefreshData = () => {
@@ -81,7 +94,7 @@ export function DashboardPage() {
     return (
         <DashboardLayout>
             <div className="space-y-6">
-                {}
+                { }
                 <div className="animate-slide-up">
                     <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
                         Admin Dashboard
@@ -89,7 +102,7 @@ export function DashboardPage() {
                     <p className="text-slate-500 mt-1">Monitor and analyze system logs in real-time</p>
                 </div>
 
-                {}
+                { }
                 <div className="space-y-4">
                     <UploadJsonDialog onUploadSuccess={handleRefreshData} />
                     <FilterBar
@@ -100,7 +113,7 @@ export function DashboardPage() {
                     />
                 </div>
 
-                {}
+                { }
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="animate-slide-up">
                         <SummaryCard
@@ -132,12 +145,12 @@ export function DashboardPage() {
                     </div>
                 </div>
 
-                {}
+                { }
                 <div className="animate-slide-up delay-400">
                     <TimelineChart data={dashboardData.eventsOverTime} />
                 </div>
 
-                {}
+                { }
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="animate-slide-up delay-100">
                         <TopListWidget
@@ -165,8 +178,8 @@ export function DashboardPage() {
                     </div>
                 </div>
 
-                {}
-                {}
+                { }
+                { }
             </div>
         </DashboardLayout>
     );

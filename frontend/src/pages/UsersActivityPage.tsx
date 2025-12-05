@@ -45,6 +45,8 @@ export function UsersActivityPage() {
     const [searchError, setSearchError] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
+    const REFRESH_INTERVAL = 60000; // 60 seconds
+
     const availableTenants = currentUser?.role === 'ADMIN'
         ? fetchedTenants
         : fetchedTenants.filter(t => t.value === String(currentUser?.tenantId));
@@ -96,8 +98,19 @@ export function UsersActivityPage() {
                 setIsLoadingActivity(false);
             }
         }
+
         fetchActivity();
-    }, [selectedUser, effectiveTenant, timeRange]);
+
+        // Auto-refresh only when not actively searching
+        if (!searchResults) {
+            const intervalId = setInterval(() => {
+                fetchActivity();
+            }, REFRESH_INTERVAL);
+
+            // Cleanup interval on unmount
+            return () => clearInterval(intervalId);
+        }
+    }, [selectedUser, effectiveTenant, timeRange, searchResults]);
 
     const handleTenantChange = (tenant: string) => {
         setSelectedTenant(tenant);
@@ -193,7 +206,7 @@ export function UsersActivityPage() {
     return (
         <DashboardLayout>
             <div className="space-y-6">
-                {}
+                { }
                 <div className="animate-slide-up">
                     <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
                         User Activity
@@ -201,9 +214,9 @@ export function UsersActivityPage() {
                     <p className="text-slate-500 mt-1">Inspect security events for a specific user</p>
                 </div>
 
-                {}
+                { }
                 <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-wrap gap-6 items-center animate-slide-up">
-                    {}
+                    { }
                     <div className="flex-1 min-w-[200px]">
                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
                             Time Range
@@ -226,7 +239,7 @@ export function UsersActivityPage() {
                         </Select>
                     </div>
 
-                    {}
+                    { }
                     <div className="flex-1 min-w-[200px]">
                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
                             Tenant
@@ -253,7 +266,7 @@ export function UsersActivityPage() {
                         </Select>
                     </div>
 
-                    {}
+                    { }
                     <div className="flex-1 min-w-[200px]">
                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
                             User
@@ -263,7 +276,7 @@ export function UsersActivityPage() {
                                 <SelectValue placeholder={isLoadingUsers ? 'Loading users...' : 'Select user'} />
                             </SelectTrigger>
                             <SelectContent>
-                                {}
+                                { }
                                 <SelectItem
                                     value="all"
                                     className="cursor-pointer focus:bg-brand-50 focus:text-brand-700 font-semibold"
@@ -290,7 +303,7 @@ export function UsersActivityPage() {
                     </div>
                 </div>
 
-                {}
+                { }
                 {!selectedUser ? (
                     <Card className="card-premium">
                         <CardContent className="flex flex-col items-center justify-center py-16">
@@ -324,7 +337,7 @@ export function UsersActivityPage() {
                     </Card>
                 ) : activityData ? (
                     <>
-                        {}
+                        { }
                         <div className={`grid grid-cols-1 gap-6 ${selectedUser === 'all' ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
                             <div className="animate-slide-up">
                                 <SummaryCard
@@ -358,7 +371,7 @@ export function UsersActivityPage() {
                             </div>
                         </div>
 
-                        {}
+                        { }
                         <Card className="card-premium animate-slide-up overflow-hidden">
                             <CardHeader className="border-b border-slate-100 bg-slate-50/50">
                                 <CardTitle className="text-lg font-bold text-slate-800">
@@ -408,7 +421,7 @@ export function UsersActivityPage() {
                             </CardContent>
                         </Card>
 
-                        {}
+                        { }
                         <Card className="card-premium animate-slide-up overflow-hidden">
                             <CardHeader className="border-b border-slate-100 bg-slate-50/50">
                                 <CardTitle className="text-lg font-bold text-slate-800">
@@ -416,7 +429,7 @@ export function UsersActivityPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 space-y-4">
-                                {}
+                                { }
                                 <SearchBar
                                     onSearch={handleSearch}
                                     onClear={handleClearSearch}
@@ -427,14 +440,14 @@ export function UsersActivityPage() {
                                     resultCount={searchResults?.total}
                                 />
 
-                                {}
+                                { }
                                 {searchError && (
                                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                                         <strong>Search Error:</strong> {searchError}
                                     </div>
                                 )}
 
-                                {}
+                                { }
                                 <div className="rounded-lg border border-slate-200 overflow-hidden">
                                     <Table>
                                         <TableHeader>
@@ -448,7 +461,7 @@ export function UsersActivityPage() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {}
+                                            { }
                                             {searchResults ? (
                                                 searchResults.data.length > 0 ? (
                                                     searchResults.data.map((event: any, index: number) => (
@@ -519,7 +532,7 @@ export function UsersActivityPage() {
                                     </Table>
                                 </div>
 
-                                {}
+                                { }
                                 {!searchResults && activityData.recentEvents?.length > 10 && (
                                     <div className="border-t border-slate-100 px-6 py-3 bg-slate-50/50">
                                         <button
@@ -547,7 +560,7 @@ export function UsersActivityPage() {
                             </CardContent>
                         </Card>
 
-                        {}
+                        { }
                         <Card className="card-premium animate-slide-up overflow-hidden">
                             <CardHeader className="border-b border-slate-100 bg-slate-50/50">
                                 <CardTitle className="text-lg font-bold text-slate-800">
