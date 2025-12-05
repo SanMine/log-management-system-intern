@@ -88,13 +88,13 @@ Users open the website and see:
 
 ## Technology Used
 
-| What | Why |
+| Technology | Why I Choose It |
 |------|-----|
-| **Node.js** | Runs the backend server |
-| **Express** | Makes building APIs easy |
-| **MongoDB** | Database for storing logs |
-| **React** | Makes the website interface |
-| **TypeScript** | JavaScript with error checking |
+| **Node.js** | Node.js is used to run the backend server. It is fast, lightweight, and very good for handling many requests at the same time. |
+| **Express** | Express helps us build API endpoints easily. It gives a simple structure for routing, middleware, and handling requests/responses. |
+| **MongoDB** | MongoDB stores all log data. It is flexible, easy to scale, and works well for large and unstructured log records. |
+| **React** | React is used to build the frontend (dashboard). It makes the UI fast, interactive, and easy to update when data changes. |
+| **TypeScript** | TypeScript catches errors before running the code. It adds type safety, makes the project easier to maintain, and reduces bugs. |
 
 ---
 
