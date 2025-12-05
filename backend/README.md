@@ -1,4 +1,4 @@
-# Log Management System - Backend
+# Nexlog - Backend
 
 A simple, clean backend for a multi-tenant log management system with RBAC (Role-Based Access Control).
 

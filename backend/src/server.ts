@@ -12,6 +12,7 @@ import dashboardRoutes from './routes/dashboardRoutes';
 import alertsRoutes from './routes/alertsRoutes';
 import usersRoutes from './routes/usersRoutes';
 import tenantsRoutes from './routes/tenantsRoutes';
+import logsRoutes from './routes/logsRoutes';
 
 // Create Express app
 const app = express();
@@ -33,6 +34,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/alerts', alertsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/tenants', tenantsRoutes);
+app.use('/api/logs', logsRoutes);  // Log search
 
 // Error handler (must be last)
 app.use(errorHandler);
@@ -45,9 +47,9 @@ async function startServer() {
 
         // Start listening
         app.listen(config.PORT, () => {
-            console.log(`🚀 Server running on port ${config.PORT}`);
-            console.log(`📊 Dashboard API: http://localhost:${config.PORT}/api/dashboard`);
-            console.log(`🔒 Frontend CORS: ${config.FRONTEND_URL}`);
+            console.log(` Server running on port ${config.PORT}`);
+            console.log(` Dashboard API: http://localhost:${config.PORT}/api/dashboard`);
+            console.log(` Frontend CORS: ${config.FRONTEND_URL}`);
         });
     } catch (error) {
         console.error('Failed to start server:', error);

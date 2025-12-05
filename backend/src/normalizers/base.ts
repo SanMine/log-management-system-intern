@@ -15,13 +15,13 @@ export async function resolveTenantId(tenantName: string): Promise<number> {
 
     // Auto-create tenant if it doesn't exist
     if (!tenant) {
-        console.log(`🔧 Auto-creating tenant: ${tenantName}`);
+        console.log(` Auto-creating tenant: ${tenantName}`);
         tenant = new Tenant({
             name: tenantName,
             key: generateTenantKey(tenantName)
         });
         await tenant.save();
-        console.log(`✅ Created tenant: ${tenant.id} (${tenant.name})`);
+        console.log(` Created tenant: ${tenant.id} (${tenant.name})`);
     }
 
     return tenant.id;

@@ -12,13 +12,13 @@ import { Counter } from '../models/Counter';
  */
 async function seed() {
     try {
-        console.log('🌱 Starting seed process...');
+        console.log(' Starting seed process...');
 
         // Connect to database
         await connectDB();
 
         // Clear existing data
-        console.log('🗑️  Clearing existing data...');
+        console.log('  Clearing existing data...');
         await Tenant.deleteMany({});
         await User.deleteMany({});
         await LogEvent.deleteMany({});
@@ -28,15 +28,15 @@ async function seed() {
         // =========================
         // Create Tenant
         // =========================
-        console.log('👥 Creating tenant...');
+        console.log(' Creating tenant...');
         const lumiqTenant = new Tenant({ name: 'Lumiq-thailand.com', key: 'LUMIQ' });
         await lumiqTenant.save();
-        console.log(`✅ Created tenant: ${lumiqTenant.id} (${lumiqTenant.name})`);
+        console.log(` Created tenant: ${lumiqTenant.id} (${lumiqTenant.name})`);
 
         // =========================
         // Create Users
         // =========================
-        console.log('🔐 Creating users...');
+        console.log(' Creating users...');
 
         // Super Admin (system-wide access)
         const adminPassword = await bcrypt.hash('admin123', 10);
@@ -78,12 +78,12 @@ async function seed() {
         });
         await franco.save();
 
-        console.log(`✅ Created users: Admin, Jimmy, John, Franco`);
+        console.log(` Created users: Admin, Jimmy, John, Franco`);
 
         // =========================
         // Create Log Events
         // =========================
-        console.log('📝 Creating log events...');
+        console.log(' Creating log events...');
 
         const now = new Date();
         const events: any[] = [];
@@ -205,12 +205,12 @@ async function seed() {
         });
 
         await LogEvent.insertMany(events);
-        console.log(`✅ Created ${events.length} log events`);
+        console.log(` Created ${events.length} log events`);
 
         // =========================
         // Create Alerts
         // =========================
-        console.log('🚨 Creating alerts...');
+        console.log(' Creating alerts...');
 
         const alerts = [
             new Alert({
@@ -236,24 +236,24 @@ async function seed() {
         ];
 
         await Alert.insertMany(alerts);
-        console.log(`✅ Created ${alerts.length} alerts`);
+        console.log(` Created ${alerts.length} alerts`);
 
-        console.log('\n✨ Seed completed successfully!');
-        console.log('\n📋 Login Credentials:');
-        console.log('  🔑 Super Admin: admin@system.com / admin123 (access to ALL tenants)');
-        console.log('  👤 Lumiq Admin: admin@lumiq.com / jimmy123 (Lumiq-thailand.com only)');
-        console.log('  👤 John:        john@lumiq.com / john123 (Lumiq-thailand.com only)');
-        console.log('  👤 Franco:      franco@lumiq.com / franco123 (Lumiq-thailand.com only)');
-        console.log('\n🏢 Tenant:');
+        console.log('\n Seed completed successfully!');
+        console.log('\n Login Credentials:');
+        console.log('   Super Admin: admin@system.com / admin123 (access to ALL tenants)');
+        console.log('   Lumiq Admin: admin@lumiq.com / jimmy123 (Lumiq-thailand.com only)');
+        console.log('   John:        john@lumiq.com / john123 (Lumiq-thailand.com only)');
+        console.log('   Franco:      franco@lumiq.com / franco123 (Lumiq-thailand.com only)');
+        console.log('\n Tenant:');
         console.log('  Lumiq-thailand.com (ID: 1)');
-        console.log('\n📊 Data Summary:');
+        console.log('\n Data Summary:');
         console.log(`  ${events.length} log events`);
         console.log(`  ${alerts.length} alerts`);
         console.log('  4 users (1 Super Admin, 3 Lumiq Admins)');
 
         process.exit(0);
     } catch (error) {
-        console.error('❌ Seed error:', error);
+        console.error(' Seed error:', error);
         process.exit(1);
     }
 }

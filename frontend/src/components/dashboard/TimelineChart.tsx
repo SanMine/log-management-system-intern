@@ -45,7 +45,7 @@ export function TimelineChart({ data }: TimelineChartProps) {
                 <CardContent className="pt-6">
                     <div className="flex items-center justify-center h-[300px] text-center">
                         <div className="space-y-2">
-                            <div className="text-slate-400 text-5xl">📊</div>
+                            <div className="text-slate-400 text-5xl"></div>
                             <p className="text-slate-600 font-medium">No events found</p>
                             <p className="text-slate-400 text-sm">Try selecting a different time range or tenant</p>
                         </div>

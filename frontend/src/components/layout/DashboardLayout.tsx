@@ -33,7 +33,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                                 <ShieldCheck className="w-5 h-5 text-white" />
                             </div>
                             <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                                Log<span className="text-brand-600">Sentinel</span>
+                                Nex<span className="text-brand-600">log</span>
                             </h1>
                         </div>
 

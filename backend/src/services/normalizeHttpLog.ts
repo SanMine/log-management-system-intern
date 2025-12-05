@@ -25,13 +25,13 @@ export async function normalizeHttpLog(raw: any): Promise<Partial<ILogEvent>> {
 
         // Auto-create tenant if it doesn't exist
         if (!tenant) {
-            console.log(`🔧 Auto-creating tenant: ${tenantName}`);
+            console.log(` Auto-creating tenant: ${tenantName}`);
             tenant = new Tenant({
                 name: tenantName,
                 key: tenantName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 10)
             });
             await tenant.save();
-            console.log(`✅ Created tenant: ${tenant.id} (${tenant.name})`);
+            console.log(` Created tenant: ${tenant.id} (${tenant.name})`);
         }
         normalized.tenantId = tenant.id;
     } else if (raw.tenantId) {

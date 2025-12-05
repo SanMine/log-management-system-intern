@@ -22,6 +22,10 @@ function parseTimeRange(timeRange?: string): Date {
 
 /**
  * Get user activity data
+ * 
+ * @param username - Username to filter by, or "all" for aggregated data
+ * @param tenantId - Tenant ID to filter by, or null for all tenants
+ * @param timeRange - Time range filter
  */
 export async function getUserActivity(
     username: string,
@@ -30,27 +34,42 @@ export async function getUserActivity(
 ) {
     const startTime = parseTimeRange(timeRange);
 
-    // Build query
-    const query: any = {
-        user: username,
+    // Build base query for time range
+    const baseQuery: any = {
         timestamp: { $gte: startTime },
     };
 
+    // Add tenant filter if specified
     if (tenantId !== null) {
-        query.tenantId = tenantId;
+        baseQuery.tenantId = tenantId;
     }
+
+    // Add user filter only if NOT "all"
+    const query: any = username === 'all'
+        ? { ...baseQuery }
+        : { ...baseQuery, user: username };
 
     // Summary statistics
     const totalEvents = await LogEvent.countDocuments(query);
     const uniqueIps = await LogEvent.distinct('src_ip', query);
 
-    const alertQuery: any = {
-        user: username,
-        time: { $gte: startTime },
-    };
-    if (tenantId !== null) {
-        alertQuery.tenantId = tenantId;
-    }
+    // Get unique users (useful for "all" view)
+    const uniqueUsers = username === 'all'
+        ? await LogEvent.distinct('user', query)
+        : [username];
+
+    // Alert query
+    const alertQuery: any = username === 'all'
+        ? {
+            time: { $gte: startTime },
+            ...(tenantId !== null ? { tenantId } : {})
+        }
+        : {
+            user: username,
+            time: { $gte: startTime },
+            ...(tenantId !== null ? { tenantId } : {})
+        };
+
     const totalAlerts = await Alert.countDocuments(alertQuery);
 
     // Events over time (grouped by hour)
@@ -71,11 +90,10 @@ export async function getUserActivity(
         { $project: { time: '$_id', count: 1, _id: 0 } },
     ]);
 
-    // Recent events
+    // All events (no limit, sorted newest first - FILO)
     const recentEvents = await LogEvent.find(query)
-        .sort({ timestamp: -1 })
-        .limit(10)
-        .select('timestamp event_type source src_ip tenantId')
+        .sort({ timestamp: -1 }) // FILO: First In Last Out (newest first)
+        .select('timestamp event_type source src_ip tenantId user')
         .lean();
 
     const formattedEvents = recentEvents.map((e: any) => ({
@@ -84,13 +102,14 @@ export async function getUserActivity(
         source: e.source,
         ip: e.src_ip,
         tenantId: e.tenantId,
+        user: e.user, // Include user for "all" view
     }));
 
     // Related alerts
     const relatedAlerts = await Alert.find(alertQuery)
         .sort({ time: -1 })
         .limit(5)
-        .select('time ruleName tenantId ip status')
+        .select('time ruleName tenantId ip status user')
         .lean();
 
     return {
@@ -98,6 +117,7 @@ export async function getUserActivity(
             totalEvents,
             uniqueIps: uniqueIps.length,
             totalAlerts,
+            uniqueUsers: uniqueUsers.length, // New field for "all" view
         },
         eventsOverTime,
         recentEvents: formattedEvents,

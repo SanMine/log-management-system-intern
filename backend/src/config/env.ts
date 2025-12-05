@@ -5,11 +5,10 @@ dotenv.config();
 
 // Export configuration
 export const config = {
-    PORT: process.env.PORT || '5004',
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5174',
+    PORT: parseInt(process.env.PORT || '5004', 10),
     MONGO_URI: process.env.MONGO_URI || '',
-    JWT_SECRET: process.env.JWT_SECRET || 'default_secret_change_me',
+    FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
+    JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
 };
 
 // Validate required environment variables

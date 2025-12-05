@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import multer from 'multer';
+import { parse } from 'csv-parse/sync';
 import { LogEvent } from '../models/LogEvent';
 import { normalizeLog } from '../normalizers';
 import * as alertService from '../services/alertService';
@@ -14,24 +15,50 @@ const upload = multer({
         fileSize: 10 * 1024 * 1024, // 10 MB limit
     },
     fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/json') {
+        // Accept both JSON and CSV files
+        const allowedMimeTypes = ['application/json', 'text/csv', 'application/csv'];
+        const allowedExtensions = ['.json', '.csv'];
+
+        const hasValidMime = allowedMimeTypes.includes(file.mimetype);
+        const hasValidExtension = allowedExtensions.some(ext =>
+            file.originalname.toLowerCase().endsWith(ext)
+        );
+
+        if (hasValidMime || hasValidExtension) {
             cb(null, true);
         } else {
-            cb(new Error('Only JSON files are allowed'));
+            cb(new Error('Only JSON and CSV files are allowed'));
         }
     },
 });
 
 /**
+ * Parse CSV file and convert to array of objects
+ */
+function parseCsvFile(fileContent: string): any[] {
+    try {
+        const records = parse(fileContent, {
+            columns: true,          // Use first row as headers
+            skip_empty_lines: true, // Skip empty lines
+            trim: true,             // Trim whitespace
+            cast: true,             // Auto-cast values (numbers, booleans)
+        });
+
+        return records;
+    } catch (error: any) {
+        throw new Error(`CSV parsing failed: ${error.message}`);
+    }
+}
+
+/**
  * POST /api/ingest/file
- * Upload and ingest a JSON file containing an array of logs
+ * Upload and ingest a JSON or CSV file containing logs
+ * 
+ * Supported formats:
+ * - JSON: Array of log objects
+ * - CSV: Headers in first row, one log per row
  * 
  * Supports all log sources: api, firewall, network, crowdstrike, aws, m365, ad
- * 
- * Each log in the array should have:
- * - tenant: string (required)
- * - source: string (required)
- * - Additional fields based on source type
  */
 router.post('/file', upload.single('file'), async (req: Request, res: Response) => {
     try {
@@ -42,44 +69,63 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
             res.status(400).json({
                 success: false,
                 error: 'No file uploaded',
-                message: 'Please upload a JSON file with field name "file"',
+                message: 'Please upload a JSON or CSV file with field name "file"',
             });
             return;
         }
 
+        const fileExtension = req.file.originalname.toLowerCase().split('.').pop();
+        const isJson = fileExtension === 'json';
+        const isCsv = fileExtension === 'csv';
+
         // ==================================
-        // STEP 2: Parse JSON file
+        // STEP 2: Parse file based on type
         // ==================================
         let logs: any[];
+        const fileContent = req.file.buffer.toString('utf-8');
+
         try {
-            const fileContent = req.file.buffer.toString('utf-8');
-            logs = JSON.parse(fileContent);
-        } catch (error) {
+            if (isJson) {
+                // Parse JSON
+                logs = JSON.parse(fileContent);
+
+                if (!Array.isArray(logs)) {
+                    res.status(400).json({
+                        success: false,
+                        error: 'Invalid format',
+                        message: 'JSON file must contain an array of log objects',
+                    });
+                    return;
+                }
+            } else if (isCsv) {
+                // Parse CSV
+                logs = parseCsvFile(fileContent);
+                console.log(` Parsed ${logs.length} rows from CSV file`);
+            } else {
+                res.status(400).json({
+                    success: false,
+                    error: 'Unsupported file type',
+                    message: 'Please upload a JSON or CSV file',
+                });
+                return;
+            }
+        } catch (error: any) {
             res.status(400).json({
                 success: false,
-                error: 'Invalid JSON',
-                message: 'File content is not valid JSON',
+                error: isJson ? 'Invalid JSON' : 'Invalid CSV',
+                message: error.message || `File content is not valid ${fileExtension?.toUpperCase()}`,
             });
             return;
         }
 
         // ==================================
-        // STEP 3: Validate array format
+        // STEP 3: Validate array is not empty
         // ==================================
-        if (!Array.isArray(logs)) {
-            res.status(400).json({
-                success: false,
-                error: 'Invalid format',
-                message: 'JSON file must contain an array of log objects',
-            });
-            return;
-        }
-
         if (logs.length === 0) {
             res.status(400).json({
                 success: false,
-                error: 'Empty array',
-                message: 'JSON file contains an empty array',
+                error: 'Empty file',
+                message: 'File contains no log entries',
             });
             return;
         }
@@ -96,7 +142,7 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
 
         const normalizedLogs: any[] = [];
 
-        console.log(`📂 Processing ${logs.length} logs from file...`);
+        console.log(` Processing ${logs.length} logs from ${fileExtension?.toUpperCase()} file...`);
 
         // Process each log through the unified normalizer
         for (let i = 0; i < logs.length; i++) {
@@ -111,23 +157,32 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
                 results.failed++;
                 results.errors.push({
                     index: i,
+                    row: i + 1, // 1-indexed for user
                     error: error.message,
                     log: rawLog
                 });
-                console.error(`❌ Failed to normalize log at index ${i}:`, error.message);
+                console.error(` Failed to normalize log at row ${i + 1}:`, error.message);
                 // Continue processing other logs
             }
         }
 
         // ==================================
-        // STEP 5: Bulk insert to database
+        // STEP 5: Generate IDs and bulk insert to database
         // ==================================
         let insertedDocs: any[] = [];
 
         if (normalizedLogs.length > 0) {
             try {
+                // IMPORTANT: insertMany() doesn't trigger pre-save hooks
+                // So we need to manually generate IDs before insertion
+                const { getNextSequence } = await import('../models/Counter');
+
+                for (const log of normalizedLogs) {
+                    log.id = await getNextSequence('logEvent');
+                }
+
                 insertedDocs = await LogEvent.insertMany(normalizedLogs);
-                console.log(`✅ Inserted ${insertedDocs.length} logs into database`);
+                console.log(` Inserted ${insertedDocs.length} logs into database`);
             } catch (error: any) {
                 console.error('Database insert error:', error);
                 res.status(500).json({
@@ -143,7 +198,7 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
         // ==================================
         // STEP 6: Process alerts
         // ==================================
-        console.log(`🔍 Processing ${insertedDocs.length} events for alert detection...`);
+        console.log(` Processing ${insertedDocs.length} events for alert detection...`);
 
         for (const doc of insertedDocs) {
             try {
@@ -162,8 +217,9 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
         res.status(statusCode).json({
             success: results.failed === 0,
             message: results.failed === 0
-                ? `Successfully ingested ${results.success} logs`
+                ? `Successfully ingested ${results.success} logs from ${fileExtension?.toUpperCase()} file`
                 : `Partially successful: ${results.success} ingested, ${results.failed} failed`,
+            fileType: fileExtension,
             results: {
                 total: results.total,
                 inserted: results.success,

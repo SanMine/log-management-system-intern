@@ -1,0 +1,5 @@
+tenant,source,event_type,host,process,severity,action,timestamp
+demoA.com,crowdstrike,malware_detected,WIN10-01,powershell.exe,8,quarantine,2025-12-04T14:00:00Z
+demoA.com,crowdstrike,suspicious_activity,WIN10-02,cmd.exe,6,alert,2025-12-04T14:05:00Z
+demoA.com,crowdstrike,malware_detected,WIN10-03,notepad.exe,9,quarantine,2025-12-04T14:10:00Z
+demoA.com,crowdstrike,process_blocked,LAPTOP-01,rundll32.exe,7,block,2025-12-04T14:15:00Z

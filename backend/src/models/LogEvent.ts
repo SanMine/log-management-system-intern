@@ -43,10 +43,12 @@ export interface ILogEvent extends Document {
     rule_name?: string;           // Rule name
     rule_id?: string;             // Rule ID
 
-    // Cloud
-    cloud_account_id?: string;    // Cloud account ID
-    cloud_region?: string;        // Cloud region
-    cloud_service?: string;       // Cloud service
+    // Cloud (nested object matching CentralLog)
+    cloud?: {
+        account_id?: string;
+        region?: string;
+        service?: string;
+    };
 
     // Raw & metadata
     raw: any;                     // Original log data
@@ -94,10 +96,12 @@ const logEventSchema = new Schema<ILogEvent>(
         rule_name: { type: String },
         rule_id: { type: String },
 
-        // Cloud
-        cloud_account_id: { type: String },
-        cloud_region: { type: String },
-        cloud_service: { type: String },
+        // Cloud (nested object)
+        cloud: {
+            account_id: { type: String },
+            region: { type: String },
+            service: { type: String }
+        },
 
         // Raw & metadata
         raw: { type: Schema.Types.Mixed },

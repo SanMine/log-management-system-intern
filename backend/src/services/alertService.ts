@@ -136,7 +136,7 @@ export async function checkMultipleFailedLogins(event: ILogEvent): Promise<void>
             existingAlert.count = count;
             existingAlert.last_event_time = event.timestamp;
             await existingAlert.save();
-            console.log(`🔄 Updated alert for ${event.user} from ${event.src_ip}: ${count} attempts`);
+            console.log(` Updated alert for ${event.user} from ${event.src_ip}: ${count} attempts`);
         } else {
             // Create new alert
             await createAlert({
@@ -149,7 +149,7 @@ export async function checkMultipleFailedLogins(event: ILogEvent): Promise<void>
                 status: 'OPEN',
                 last_event_time: event.timestamp,
             });
-            console.log(`🚨 NEW ALERT: ${ruleName} - ${event.user} from ${event.src_ip} (${count} attempts)`);
+            console.log(` NEW ALERT: ${ruleName} - ${event.user} from ${event.src_ip} (${count} attempts)`);
         }
     }
 }
@@ -215,7 +215,7 @@ export async function checkDistributedFailedLogins(event: ILogEvent): Promise<vo
             existingAlert.involved_ips = involvedIps;
             existingAlert.last_event_time = event.timestamp;
             await existingAlert.save();
-            console.log(`🔄 Updated distributed attack alert for ${event.user}: ${distinctIpCount} IPs`);
+            console.log(` Updated distributed attack alert for ${event.user}: ${distinctIpCount} IPs`);
         } else {
             // Create new alert
             await createAlert({
@@ -228,7 +228,7 @@ export async function checkDistributedFailedLogins(event: ILogEvent): Promise<vo
                 status: 'OPEN',
                 last_event_time: event.timestamp,
             });
-            console.log(`🚨 NEW ALERT: ${ruleName} - ${event.user} targeted from ${distinctIpCount} IPs: [${involvedIps.join(', ')}]`);
+            console.log(` NEW ALERT: ${ruleName} - ${event.user} targeted from ${distinctIpCount} IPs: [${involvedIps.join(', ')}]`);
         }
     }
 }
@@ -238,19 +238,43 @@ export async function checkDistributedFailedLogins(event: ILogEvent): Promise<vo
  */
 export async function resolveAlertsOnSuccess(event: ILogEvent): Promise<void> {
     // Only process login success events (handle both naming conventions)
-    if (event.event_type !== 'login_success' && event.event_type !== 'login_successed') return;
+    if (event.event_type !== 'login_success' && event.event_type !== 'login_successed') {
+        console.log(`⏭️  Skipping auto-resolve - event_type is "${event.event_type}", not login_success/login_successed`);
+        return;
+    }
 
     // Skip if missing user
-    if (!event.user) return;
+    if (!event.user) {
+        console.log(`⏭️  Skipping auto-resolve - no user in event`);
+        return;
+    }
 
-    console.log(`🔍 Checking for OPEN alerts to resolve for user: ${event.user}, tenant: ${event.tenantId}`);
+    console.log(` Checking for OPEN/INVESTIGATING alerts to resolve for user: ${event.user}, tenant: ${event.tenantId}`);
 
-    // Find all OPEN alerts for this user
+    // First, check if there are any matching alerts (OPEN or INVESTIGATING)
+    const existingAlerts = await Alert.find({
+        tenantId: event.tenantId,
+        user: event.user,
+        status: { $in: ['OPEN', 'INVESTIGATING'] },
+    });
+
+    console.log(` Found ${existingAlerts.length} OPEN/INVESTIGATING alert(s) for user "${event.user}" in tenant ${event.tenantId}`);
+    if (existingAlerts.length > 0) {
+        console.log(`   Alert details:`, existingAlerts.map(a => ({
+            id: a.id,
+            ruleName: a.ruleName,
+            status: a.status,
+            tenantId: a.tenantId,
+            user: a.user
+        })));
+    }
+
+    // Resolve all OPEN and INVESTIGATING alerts for this user
     const result = await Alert.updateMany(
         {
             tenantId: event.tenantId,
             user: event.user,
-            status: 'OPEN',
+            status: { $in: ['OPEN', 'INVESTIGATING'] },
         },
         {
             status: 'RESOLVED',
@@ -259,9 +283,10 @@ export async function resolveAlertsOnSuccess(event: ILogEvent): Promise<void> {
     );
 
     if (result.modifiedCount > 0) {
-        console.log(`✅ Auto-resolved ${result.modifiedCount} alert(s) for ${event.user} (successful login)`);
+        console.log(` Auto-resolved ${result.modifiedCount} alert(s) for ${event.user} (successful login)`);
     } else {
-        console.log(`ℹ️  No OPEN alerts found for user ${event.user} to resolve`);
+        console.log(`ℹ️  No OPEN/INVESTIGATING alerts found for user ${event.user} to resolve`);
+        console.log(`   Query was: { tenantId: ${event.tenantId}, user: "${event.user}", status: { $in: ['OPEN', 'INVESTIGATING'] } }`);
     }
 }
 

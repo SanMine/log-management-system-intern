@@ -31,11 +31,14 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
         const selectedFile = e.target.files?.[0];
         if (!selectedFile) return;
 
-        // Validate file type
-        if (selectedFile.type !== 'application/json' && !selectedFile.name.endsWith('.json')) {
+        // Validate file type - accept JSON or CSV
+        const isJson = selectedFile.type === 'application/json' || selectedFile.name.endsWith('.json');
+        const isCsv = selectedFile.type === 'text/csv' || selectedFile.type === 'application/csv' || selectedFile.name.endsWith('.csv');
+
+        if (!isJson && !isCsv) {
             setResult({
                 success: false,
-                message: 'Please select a JSON file',
+                message: 'Please select a JSON or CSV file',
             });
             return;
         }
@@ -106,7 +109,7 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
             <DialogTrigger asChild>
                 <Button variant="outline" className="gap-2">
                     <Upload className="h-4 w-4" />
-                    Upload JSON
+                    Upload File
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
@@ -116,7 +119,7 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
                         Upload Log File
                     </DialogTitle>
                     <DialogDescription>
-                        Upload a JSON file containing an array of log events to ingest into the system.
+                        Upload a JSON or CSV file containing log events to ingest into the system.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -127,12 +130,12 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
                             htmlFor="json-file-input"
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                            Select JSON File
+                            Select File (JSON or CSV)
                         </label>
                         <input
                             id="json-file-input"
                             type="file"
-                            accept=".json,application/json"
+                            accept=".json,.csv,application/json,text/csv,application/csv"
                             onChange={handleFileChange}
                             disabled={uploading}
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -191,23 +194,27 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
                             JSON Format Example:
                         </p>
                         <pre className="text-xs overflow-x-auto">
-                            {`[
-  {
-    "tenant": "Lumiq-thailand.com",
-    "event_type": "login_success",
-    "user": "username",
-    "ip": "192.168.1.1",
-    "url": "/path",
-    "method": "POST"
-  }
-]`}
-                        </pre>
-                        <p className="text-xs text-muted-foreground mt-2">
-                            Required: <code className="text-xs">tenant</code>, <code className="text-xs">event_type</code>, <code className="text-xs">user</code>
-                        </p>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
+                            {`JSON Format:
+                            [
+                            {
+                                "tenant": "demo.com",
+                                "source": "api",
+                                "event_type": "login_success",
+                                "user": "username",
+                                "ip": "192.168.1.1"
+                            }
+                            ]
+
+                            CSV Format:
+                            tenant,source,event_type,user,ip
+                            demo.com,api,login_success,username,192.168.1.1`}
+                                                    </pre>
+                                                    <p className="text-xs text-muted-foreground mt-2">
+                                                        Required: <code className="text-xs">tenant</code>, <code className="text-xs">source</code>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
+                                );
+                            }

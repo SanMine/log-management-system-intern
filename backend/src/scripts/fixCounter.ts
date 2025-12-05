@@ -8,7 +8,7 @@ import { LogEvent } from '../models/LogEvent';
  */
 async function fixCounter() {
     try {
-        console.log('🔧 Fixing counter...');
+        console.log(' Fixing counter...');
 
         // Connect to database
         await connectDB();
@@ -17,11 +17,11 @@ async function fixCounter() {
         const maxEvent = await LogEvent.findOne().sort({ id: -1 }).select('id');
         const maxId = maxEvent ? maxEvent.id : 0;
 
-        console.log(`📊 Current max ID in database: ${maxId}`);
+        console.log(` Current max ID in database: ${maxId}`);
 
         // Check current counter value
         const currentCounter = await Counter.findById('logEvent');
-        console.log(`🔢 Current counter value: ${currentCounter?.seq || 'not set'}`);
+        console.log(` Current counter value: ${currentCounter?.seq || 'not set'}`);
 
         // Update the counter to start from maxId + 1
         await Counter.findByIdAndUpdate(
@@ -31,11 +31,11 @@ async function fixCounter() {
         );
 
         const updatedCounter = await Counter.findById('logEvent');
-        console.log(`✅ Counter updated! Current value: ${updatedCounter?.seq}, Next ID will be: ${maxId + 1}`);
+        console.log(` Counter updated! Current value: ${updatedCounter?.seq}, Next ID will be: ${maxId + 1}`);
 
         process.exit(0);
     } catch (error) {
-        console.error('❌ Error fixing counter:', error);
+        console.error(' Error fixing counter:', error);
         process.exit(1);
     }
 }

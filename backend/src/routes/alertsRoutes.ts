@@ -40,15 +40,27 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
  * PATCH /api/alerts/:id
  * Update alert status
  *
+ * RBAC: Only VIEWER accounts can update alert status
+ * Super Admin can only view (read-only)
+ *
  * Body: { status: "OPEN" | "INVESTIGATING" | "RESOLVED" }
  */
 router.patch('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     try {
+        // RBAC: Only viewers can update alert status
+        if (req.user?.role !== 'VIEWER') {
+            res.status(403).json({
+                error: 'Forbidden',
+                message: 'Only viewer accounts can update alert status. Super admin has read-only access.'
+            });
+            return;
+        }
+
         const alertId = parseInt(req.params.id, 10);
         const { status } = req.body;
 
         if (!status || !['OPEN', 'INVESTIGATING', 'RESOLVED'].includes(status)) {
-            res.status(400).json({ error: 'Invalid status' });
+            res.status(400).json({ error: 'Invalid status. Must be OPEN, INVESTIGATING, or RESOLVED' });
             return;
         }
 

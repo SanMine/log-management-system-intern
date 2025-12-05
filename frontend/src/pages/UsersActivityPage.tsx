@@ -23,6 +23,8 @@ import { Activity, Server, AlertTriangle, AlertCircle, CheckCircle, Clock } from
 import { usersAPI } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTenants } from '@/hooks/useTenants';
+import { searchLogs, type LogSearchResponse } from '@/services/logsApi';
+import { SearchBar } from '@/components/search/SearchBar';
 
 export function UsersActivityPage() {
     const { user: currentUser } = useAuth();
@@ -36,6 +38,13 @@ export function UsersActivityPage() {
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
     const [isLoadingActivity, setIsLoadingActivity] = useState(false);
     const [error, setError] = useState('');
+    const [showAllEvents, setShowAllEvents] = useState(false); // Toggle for showing all events
+
+    // Search state
+    const [searchResults, setSearchResults] = useState<LogSearchResponse | null>(null);
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchError, setSearchError] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     // RBAC: Determine available tenants based on role
     const availableTenants = currentUser?.role === 'ADMIN'
@@ -77,6 +86,7 @@ export function UsersActivityPage() {
 
             setIsLoadingActivity(true);
             setError('');
+            setShowAllEvents(false); // Reset when fetching new data
             try {
                 const data = await usersAPI.getUserActivity(
                     selectedUser,
@@ -97,6 +107,7 @@ export function UsersActivityPage() {
     const handleTenantChange = (tenant: string) => {
         setSelectedTenant(tenant);
         setSelectedUser(''); // Reset user selection when tenant changes
+        setShowAllEvents(false); // Reset show all events
     };
 
     const getStatusConfig = (status: string) => {
@@ -122,6 +133,69 @@ export function UsersActivityPage() {
                     icon: AlertCircle,
                 };
         }
+    };
+
+    // Convert time range to ISO datetime strings for search query
+    const getTimeRangeDates = (range: string): { from: string; to: string } => {
+        const now = new Date();
+        let from: Date;
+
+        switch (range) {
+            case '15m':
+                from = new Date(now.getTime() - 15 * 60 * 1000);
+                break;
+            case '1h':
+                from = new Date(now.getTime() - 60 * 60 * 1000);
+                break;
+            case '24h':
+                from = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                break;
+            case '7d':
+                from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                break;
+            default:
+                from = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        }
+
+        return {
+            from: from.toISOString(),
+            to: now.toISOString(),
+        };
+    };
+
+    // Execute log search
+    const handleSearch = async (query: string, page: number) => {
+        setIsSearching(true);
+        setSearchError('');
+
+        try {
+            const { from, to } = getTimeRangeDates(timeRange);
+
+            const results = await searchLogs({
+                tenant: effectiveTenant === 'all' ? fetchedTenants[0]?.value || 'all' : effectiveTenant,
+                user: selectedUser || undefined,
+                from,
+                to,
+                q: query,
+                page,
+                limit: 50,
+            });
+
+            setSearchResults(results);
+            setCurrentPage(page);
+        } catch (err: any) {
+            setSearchError(err.message || 'Search failed');
+            console.error('Search error:', err);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    // Clear search and return to normal view
+    const handleClearSearch = () => {
+        setSearchResults(null);
+        setSearchError('');
+        setCurrentPage(1);
     };
 
     return (
@@ -197,6 +271,13 @@ export function UsersActivityPage() {
                                 <SelectValue placeholder={isLoadingUsers ? 'Loading users...' : 'Select user'} />
                             </SelectTrigger>
                             <SelectContent>
+                                {/* All Users Option */}
+                                <SelectItem
+                                    value="all"
+                                    className="cursor-pointer focus:bg-brand-50 focus:text-brand-700 font-semibold"
+                                >
+                                    All Users
+                                </SelectItem>
                                 {users.length > 0 ? (
                                     users.map((user) => (
                                         <SelectItem
@@ -252,7 +333,7 @@ export function UsersActivityPage() {
                 ) : activityData ? (
                     <>
                         {/* Summary Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className={`grid grid-cols-1 gap-6 ${selectedUser === 'all' ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
                             <div className="animate-slide-up">
                                 <SummaryCard
                                     title="Total Events"
@@ -267,7 +348,16 @@ export function UsersActivityPage() {
                                     icon={Server}
                                 />
                             </div>
-                            <div className="animate-slide-up delay-200">
+                            {selectedUser === 'all' && (
+                                <div className="animate-slide-up delay-150">
+                                    <SummaryCard
+                                        title="Unique Users"
+                                        value={activityData.summary?.uniqueUsers || 0}
+                                        icon={Activity}
+                                    />
+                                </div>
+                            )}
+                            <div className={`animate-slide-up ${selectedUser === 'all' ? 'delay-200' : 'delay-150'}`}>
                                 <SummaryCard
                                     title="Total Alerts"
                                     value={activityData.summary?.totalAlerts || 0}
@@ -280,7 +370,7 @@ export function UsersActivityPage() {
                         <Card className="card-premium animate-slide-up overflow-hidden">
                             <CardHeader className="border-b border-slate-100 bg-slate-50/50">
                                 <CardTitle className="text-lg font-bold text-slate-800">
-                                    Activity Over Time - {selectedUser}
+                                    Activity Over Time - {selectedUser === 'all' ? 'All Users' : selectedUser}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="pt-6">
@@ -326,47 +416,144 @@ export function UsersActivityPage() {
                             </CardContent>
                         </Card>
 
-                        {/* Recent Events Table */}
+                        {/* All Events Table */}
                         <Card className="card-premium animate-slide-up overflow-hidden">
                             <CardHeader className="border-b border-slate-100 bg-slate-50/50">
                                 <CardTitle className="text-lg font-bold text-slate-800">
-                                    Recent Events
+                                    All Events
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="p-0">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow className="bg-slate-50 hover:bg-slate-50 border-slate-100">
-                                            <TableHead className="font-semibold text-slate-600 pl-6">Time</TableHead>
-                                            <TableHead className="font-semibold text-slate-600">Event Type</TableHead>
-                                            <TableHead className="font-semibold text-slate-600">Source</TableHead>
-                                            <TableHead className="font-semibold text-slate-600">IP</TableHead>
-                                            <TableHead className="font-semibold text-slate-600 pr-6">Tenant</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {activityData.recentEvents?.map((event: any, index: number) => (
-                                            <TableRow
-                                                key={index}
-                                                className="border-slate-100 hover:bg-slate-50/80 transition-colors"
-                                            >
-                                                <TableCell className="font-medium text-sm text-slate-600 pl-6">
-                                                    {new Date(event.time).toLocaleString()}
-                                                </TableCell>
-                                                <TableCell className="font-medium text-slate-900">
-                                                    {event.eventType}
-                                                </TableCell>
-                                                <TableCell className="text-slate-600">{event.source}</TableCell>
-                                                <TableCell className="font-mono text-sm text-slate-500">{event.ip}</TableCell>
-                                                <TableCell className="pr-6">
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-medium">
-                                                        {fetchedTenants.find(t => t.value === String(event.tenantId))?.label || `Tenant ${event.tenantId}`}
-                                                    </span>
-                                                </TableCell>
+                            <CardContent className="p-6 space-y-4">
+                                {/* Search Bar */}
+                                <SearchBar
+                                    onSearch={handleSearch}
+                                    onClear={handleClearSearch}
+                                    isLoading={isSearching}
+                                    currentPage={currentPage}
+                                    totalPages={searchResults?.totalPages || 0}
+                                    hasResults={searchResults !== null}
+                                    resultCount={searchResults?.total}
+                                />
+
+                                {/* Error Display */}
+                                {searchError && (
+                                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                                        <strong>Search Error:</strong> {searchError}
+                                    </div>
+                                )}
+
+                                {/* Events Table - shows either search results or regular activity data */}
+                                <div className="rounded-lg border border-slate-200 overflow-hidden">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow className="bg-slate-50 hover:bg-slate-50 border-slate-100">
+                                                <TableHead className="font-semibold text-slate-600 pl-6">Time</TableHead>
+                                                {selectedUser === 'all' && <TableHead className="font-semibold text-slate-600">User</TableHead>}
+                                                <TableHead className="font-semibold text-slate-600">Event Type</TableHead>
+                                                <TableHead className="font-semibold text-slate-600">Source</TableHead>
+                                                <TableHead className="font-semibold text-slate-600">IP</TableHead>
+                                                <TableHead className="font-semibold text-slate-600 pr-6">Tenant</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {/* Show search results if searching, otherwise show activity data */}
+                                            {searchResults ? (
+                                                // Display search results
+                                                searchResults.data.length > 0 ? (
+                                                    searchResults.data.map((event: any, index: number) => (
+                                                        <TableRow
+                                                            key={index}
+                                                            className="border-slate-100 hover:bg-slate-50/80 transition-colors"
+                                                        >
+                                                            <TableCell className="font-medium text-sm text-slate-600 pl-6">
+                                                                {new Date(event.timestamp).toLocaleString()}
+                                                            </TableCell>
+                                                            {selectedUser === 'all' && (
+                                                                <TableCell className="font-medium text-slate-700">
+                                                                    {event.user || 'N/A'}
+                                                                </TableCell>
+                                                            )}
+                                                            <TableCell className="font-medium text-slate-900">
+                                                                {event.event_type}
+                                                            </TableCell>
+                                                            <TableCell className="text-slate-600">{event.source}</TableCell>
+                                                            <TableCell className="font-mono text-sm text-slate-500">
+                                                                {event.src_ip || 'N/A'}
+                                                            </TableCell>
+                                                            <TableCell className="pr-6">
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-medium">
+                                                                    {fetchedTenants.find(t => t.value === String(event.tenantId))?.label || `Tenant ${event.tenantId}`}
+                                                                </span>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                ) : (
+                                                    <TableRow>
+                                                        <TableCell colSpan={selectedUser === 'all' ? 6 : 5} className="text-center py-8 text-slate-500">
+                                                            No results found for your search query.
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )
+                                            ) : (
+                                                // Display regular activity data
+                                                (showAllEvents
+                                                    ? activityData.recentEvents
+                                                    : activityData.recentEvents?.slice(0, 10)
+                                                )?.map((event: any, index: number) => (
+                                                    <TableRow
+                                                        key={index}
+                                                        className="border-slate-100 hover:bg-slate-50/80 transition-colors"
+                                                    >
+                                                        <TableCell className="font-medium text-sm text-slate-600 pl-6">
+                                                            {new Date(event.time).toLocaleString()}
+                                                        </TableCell>
+                                                        {selectedUser === 'all' && (
+                                                            <TableCell className="font-medium text-slate-700">
+                                                                {event.user}
+                                                            </TableCell>
+                                                        )}
+                                                        <TableCell className="font-medium text-slate-900">
+                                                            {event.eventType}
+                                                        </TableCell>
+                                                        <TableCell className="text-slate-600">{event.source}</TableCell>
+                                                        <TableCell className="font-mono text-sm text-slate-500">{event.ip}</TableCell>
+                                                        <TableCell className="pr-6">
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-medium">
+                                                                {fetchedTenants.find(t => t.value === String(event.tenantId))?.label || `Tenant ${event.tenantId}`}
+                                                            </span>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+
+                                {/* Show All Events Footer - only for regular activity data, not search results */}
+                                {!searchResults && activityData.recentEvents?.length > 10 && (
+                                    <div className="border-t border-slate-100 px-6 py-3 bg-slate-50/50">
+                                        <button
+                                            onClick={() => setShowAllEvents(!showAllEvents)}
+                                            className="text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors flex items-center gap-2"
+                                        >
+                                            {showAllEvents ? (
+                                                <>
+                                                    Show Less
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                                    </svg>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Show All Events ({activityData.recentEvents.length})
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 

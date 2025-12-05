@@ -39,10 +39,12 @@ export async function normalizeAwsLog(raw: any): Promise<CentralLog> {
         user: raw.user || raw.userIdentity?.userName || raw.userIdentity?.principalId,
         src_ip: raw.sourceIPAddress || raw.ip,
 
-        // Cloud-specific fields
-        cloud_account_id: raw.cloud?.account_id || raw.accountId,
-        cloud_region: raw.cloud?.region || raw.awsRegion,
-        cloud_service: raw.cloud?.service || raw.eventSource,
+        // Cloud-specific fields (nested structure)
+        cloud: {
+            account_id: raw.cloud?.account_id || raw.accountId,
+            region: raw.cloud?.region || raw.awsRegion,
+            service: raw.cloud?.service || raw.eventSource
+        },
 
         // Additional metadata
         action: mapAwsEventToAction(raw.event_type || raw.eventName),
