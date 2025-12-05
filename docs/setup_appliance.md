@@ -68,7 +68,7 @@ cd frontend
 npm install
 
 Add .env file in frontend folder
-VITE_API_BASE_URL=http://localhost:5004/api (backend port)
+VITE_API_URL=http://localhost:5004/api
 
 cd ..
 ```

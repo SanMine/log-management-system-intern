@@ -217,10 +217,26 @@ nexlog/
 - Backend: http://localhost:5004
 - Frontend: http://localhost:5174
 
-**Production (SaaS):**
-- Backend: Deploy to Render
-- Frontend: Deploy to Vercel
-- Database: MongoDB Atlas
+**Production Deployment:**
+- **Frontend**: https://nexlog-six.vercel.app
+- **Backend API**: https://nexlog-backend.onrender.com
+- **Database**: MongoDB Atlas
+
+**Environment Variables for Production:**
+
+Vercel (Frontend):
+```
+VITE_API_URL=https://nexlog-backend.onrender.com/api
+```
+
+Render (Backend):
+```
+MONGO_URI=your-mongodb-atlas-connection-string
+JWT_SECRET=your-production-secret-key
+PORT=5004
+FRONTEND_URL=https://nexlog-six.vercel.app
+NODE_ENV=production
+```
 
 See `/docs/setup_saas.md` for deployment guide.
 

@@ -28,14 +28,14 @@ This document explains how to deploy Nexlog in SaaS mode using:
 PORT=5004
 MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/nexlog
 JWT_SECRET=your-random-secret-key-here
-FRONTEND_URL=https://your-frontend.vercel.app
+FRONTEND_URL=https://nexlog-six.vercel.app
 NODE_ENV=production
 ```
 
 ### Frontend (.env)
 
 ```
-VITE_API_BASE_URL=https://your-backend.onrender.com/api
+VITE_API_URL=https://nexlog-backend.onrender.com/api
 ```
 
 ---
@@ -66,8 +66,8 @@ mongodb+srv://admin:mypass123@cluster0.xxxxx.mongodb.net/nexlog
 5. Configure:
    - **Name:** nexlog-backend
    - **Root Directory:** backend
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm run dev`
+   - **Build Command:** `npm install --include=dev && npm run build`
+   - **Start Command:** `npm start`
    - **Instance Type:** Free
 6. Add environment variables from step 2
 7. Click "Create Web Service"
@@ -107,14 +107,14 @@ Super Admin credentials:
    - **Output Directory:** dist
 6. Add environment variable:
    ```
-   VITE_API_BASE_URL=https://nexlog-backend.onrender.com/api
+   VITE_API_URL=https://nexlog-backend.onrender.com/api
    ```
 7. Click "Deploy"
 8. Wait 2-3 minutes
 
 Your frontend URL:
 ```
-https://nexlog.vercel.app
+https://nexlog-six.vercel.app
 ```
 
 ### Update Backend CORS
@@ -224,7 +224,7 @@ Expected: Returns logs array
 
 **6. Open frontend**
 ```
-https://nexlog.vercel.app
+https://nexlog-six.vercel.app
 ```
 Expected: See login page
 
@@ -248,24 +248,20 @@ If all checked, deployment is successful.
 
 ## 9. Production URLs
 
-Update these in your documentation:
+**Live Deployment:**
 
-**Backend API:**
-```
-https://nexlog-backend.onrender.com
-```
+- **Frontend Application:** https://nexlog-six.vercel.app
+- **Backend API:** https://nexlog-backend.onrender.com
+- **Database:** MongoDB Atlas (Cloud)
 
-**Frontend App:**
-```
-https://nexlog.vercel.app
-```
+**API Endpoints:**
+- Health Check: https://nexlog-backend.onrender.com/health
+- Auth: https://nexlog-backend.onrender.com/api/auth
+- Logs: https://nexlog-backend.onrender.com/api/logs
+- Dashboard: https://nexlog-backend.onrender.com/api/dashboard
+- Alerts: https://nexlog-backend.onrender.com/api/alerts
 
-**API Documentation:**
-```
-https://nexlog-backend.onrender.com/api
-```
-
-Share these URLs with examiners for testing.
+Share these URLs for testing and demonstration.
 
 ---
 

@@ -276,9 +276,9 @@ All endpoints (except login/signup) need a token in the header.
 - Database: MongoDB Atlas (cloud)
 
 ### Production (SaaS)
-- Frontend: Vercel (free hosting)
-- Backend: Render (free hosting)  
-- Database: MongoDB Atlas (cloud)
+- **Frontend:** https://nexlog-six.vercel.app
+- **Backend:** https://nexlog-backend.onrender.com
+- **Database:** MongoDB Atlas (cloud)
 
 All deployed automatically from GitHub.
 
