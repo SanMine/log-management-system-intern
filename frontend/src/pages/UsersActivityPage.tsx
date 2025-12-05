@@ -38,25 +38,21 @@ export function UsersActivityPage() {
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
     const [isLoadingActivity, setIsLoadingActivity] = useState(false);
     const [error, setError] = useState('');
-    const [showAllEvents, setShowAllEvents] = useState(false); // Toggle for showing all events
+    const [showAllEvents, setShowAllEvents] = useState(false);
 
-    // Search state
     const [searchResults, setSearchResults] = useState<LogSearchResponse | null>(null);
     const [isSearching, setIsSearching] = useState(false);
     const [searchError, setSearchError] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
-    // RBAC: Determine available tenants based on role
     const availableTenants = currentUser?.role === 'ADMIN'
-        ? fetchedTenants  // Admin sees all tenants from backend
-        : fetchedTenants.filter(t => t.value === String(currentUser?.tenantId)); // Viewer sees only their tenant
+        ? fetchedTenants
+        : fetchedTenants.filter(t => t.value === String(currentUser?.tenantId));
 
-    // If viewer, lock tenant to their assigned tenant
     const effectiveTenant = currentUser?.role === 'VIEWER'
         ? String(currentUser.tenantId)
         : selectedTenant;
 
-    //Fetch users when tenant changes
     useEffect(() => {
         async function fetchUsers() {
             setIsLoadingUsers(true);
@@ -76,7 +72,6 @@ export function UsersActivityPage() {
         }
     }, [effectiveTenant, currentUser]);
 
-    // Fetch user activity when user selection changes
     useEffect(() => {
         async function fetchActivity() {
             if (!selectedUser) {
@@ -86,7 +81,7 @@ export function UsersActivityPage() {
 
             setIsLoadingActivity(true);
             setError('');
-            setShowAllEvents(false); // Reset when fetching new data
+            setShowAllEvents(false);
             try {
                 const data = await usersAPI.getUserActivity(
                     selectedUser,
@@ -106,8 +101,8 @@ export function UsersActivityPage() {
 
     const handleTenantChange = (tenant: string) => {
         setSelectedTenant(tenant);
-        setSelectedUser(''); // Reset user selection when tenant changes
-        setShowAllEvents(false); // Reset show all events
+        setSelectedUser('');
+        setShowAllEvents(false);
     };
 
     const getStatusConfig = (status: string) => {
@@ -135,7 +130,6 @@ export function UsersActivityPage() {
         }
     };
 
-    // Convert time range to ISO datetime strings for search query
     const getTimeRangeDates = (range: string): { from: string; to: string } => {
         const now = new Date();
         let from: Date;
@@ -163,7 +157,6 @@ export function UsersActivityPage() {
         };
     };
 
-    // Execute log search
     const handleSearch = async (query: string, page: number) => {
         setIsSearching(true);
         setSearchError('');
@@ -191,7 +184,6 @@ export function UsersActivityPage() {
         }
     };
 
-    // Clear search and return to normal view
     const handleClearSearch = () => {
         setSearchResults(null);
         setSearchError('');
@@ -201,7 +193,7 @@ export function UsersActivityPage() {
     return (
         <DashboardLayout>
             <div className="space-y-6">
-                {/* Page Title */}
+                {}
                 <div className="animate-slide-up">
                     <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
                         User Activity
@@ -209,9 +201,9 @@ export function UsersActivityPage() {
                     <p className="text-slate-500 mt-1">Inspect security events for a specific user</p>
                 </div>
 
-                {/* Filter Bar */}
+                {}
                 <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-wrap gap-6 items-center animate-slide-up">
-                    {/* Time Range */}
+                    {}
                     <div className="flex-1 min-w-[200px]">
                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
                             Time Range
@@ -234,7 +226,7 @@ export function UsersActivityPage() {
                         </Select>
                     </div>
 
-                    {/* Tenant Selector (RBAC-aware) */}
+                    {}
                     <div className="flex-1 min-w-[200px]">
                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
                             Tenant
@@ -261,7 +253,7 @@ export function UsersActivityPage() {
                         </Select>
                     </div>
 
-                    {/* User Selector */}
+                    {}
                     <div className="flex-1 min-w-[200px]">
                         <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
                             User
@@ -271,7 +263,7 @@ export function UsersActivityPage() {
                                 <SelectValue placeholder={isLoadingUsers ? 'Loading users...' : 'Select user'} />
                             </SelectTrigger>
                             <SelectContent>
-                                {/* All Users Option */}
+                                {}
                                 <SelectItem
                                     value="all"
                                     className="cursor-pointer focus:bg-brand-50 focus:text-brand-700 font-semibold"
@@ -298,7 +290,7 @@ export function UsersActivityPage() {
                     </div>
                 </div>
 
-                {/* Empty State or User Activity Content */}
+                {}
                 {!selectedUser ? (
                     <Card className="card-premium">
                         <CardContent className="flex flex-col items-center justify-center py-16">
@@ -332,7 +324,7 @@ export function UsersActivityPage() {
                     </Card>
                 ) : activityData ? (
                     <>
-                        {/* Summary Cards */}
+                        {}
                         <div className={`grid grid-cols-1 gap-6 ${selectedUser === 'all' ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
                             <div className="animate-slide-up">
                                 <SummaryCard
@@ -366,7 +358,7 @@ export function UsersActivityPage() {
                             </div>
                         </div>
 
-                        {/* Activity Timeline */}
+                        {}
                         <Card className="card-premium animate-slide-up overflow-hidden">
                             <CardHeader className="border-b border-slate-100 bg-slate-50/50">
                                 <CardTitle className="text-lg font-bold text-slate-800">
@@ -416,7 +408,7 @@ export function UsersActivityPage() {
                             </CardContent>
                         </Card>
 
-                        {/* All Events Table */}
+                        {}
                         <Card className="card-premium animate-slide-up overflow-hidden">
                             <CardHeader className="border-b border-slate-100 bg-slate-50/50">
                                 <CardTitle className="text-lg font-bold text-slate-800">
@@ -424,7 +416,7 @@ export function UsersActivityPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 space-y-4">
-                                {/* Search Bar */}
+                                {}
                                 <SearchBar
                                     onSearch={handleSearch}
                                     onClear={handleClearSearch}
@@ -435,14 +427,14 @@ export function UsersActivityPage() {
                                     resultCount={searchResults?.total}
                                 />
 
-                                {/* Error Display */}
+                                {}
                                 {searchError && (
                                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                                         <strong>Search Error:</strong> {searchError}
                                     </div>
                                 )}
 
-                                {/* Events Table - shows either search results or regular activity data */}
+                                {}
                                 <div className="rounded-lg border border-slate-200 overflow-hidden">
                                     <Table>
                                         <TableHeader>
@@ -456,9 +448,8 @@ export function UsersActivityPage() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {/* Show search results if searching, otherwise show activity data */}
+                                            {}
                                             {searchResults ? (
-                                                // Display search results
                                                 searchResults.data.length > 0 ? (
                                                     searchResults.data.map((event: any, index: number) => (
                                                         <TableRow
@@ -495,7 +486,6 @@ export function UsersActivityPage() {
                                                     </TableRow>
                                                 )
                                             ) : (
-                                                // Display regular activity data
                                                 (showAllEvents
                                                     ? activityData.recentEvents
                                                     : activityData.recentEvents?.slice(0, 10)
@@ -529,7 +519,7 @@ export function UsersActivityPage() {
                                     </Table>
                                 </div>
 
-                                {/* Show All Events Footer - only for regular activity data, not search results */}
+                                {}
                                 {!searchResults && activityData.recentEvents?.length > 10 && (
                                     <div className="border-t border-slate-100 px-6 py-3 bg-slate-50/50">
                                         <button
@@ -557,7 +547,7 @@ export function UsersActivityPage() {
                             </CardContent>
                         </Card>
 
-                        {/* Related Alerts */}
+                        {}
                         <Card className="card-premium animate-slide-up overflow-hidden">
                             <CardHeader className="border-b border-slate-100 bg-slate-50/50">
                                 <CardTitle className="text-lg font-bold text-slate-800">

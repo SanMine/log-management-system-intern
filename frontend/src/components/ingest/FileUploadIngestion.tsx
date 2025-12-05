@@ -18,7 +18,6 @@ export function FileUploadIngestion() {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
 
-            // Validate file type
             if (selectedFile.type !== 'application/json') {
                 setResult({
                     success: false,
@@ -28,7 +27,7 @@ export function FileUploadIngestion() {
             }
 
             setFile(selectedFile);
-            setResult(null); // Clear previous result
+            setResult(null);
         }
     };
 
@@ -51,7 +50,6 @@ export function FileUploadIngestion() {
             const response = await fetch(`${API_URL}/ingest/file`, {
                 method: 'POST',
                 body: formData,
-                // Don't set Content-Type header - browser will set it automatically with boundary
             });
 
             const data = await response.json();
@@ -62,8 +60,7 @@ export function FileUploadIngestion() {
                     message: data.message || 'Upload successful',
                     inserted: data.inserted,
                 });
-                setFile(null); // Clear file selection
-                // Reset file input
+                setFile(null);
                 const fileInput = document.getElementById('file-input') as HTMLInputElement;
                 if (fileInput) fileInput.value = '';
             } else {
@@ -91,7 +88,7 @@ export function FileUploadIngestion() {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                {/* File Input */}
+                { }
                 <div className="space-y-2">
                     <label
                         htmlFor="file-input"
@@ -121,7 +118,7 @@ export function FileUploadIngestion() {
                     )}
                 </div>
 
-                {/* Upload Button */}
+                { }
                 <Button
                     onClick={handleUpload}
                     disabled={!file || uploading}
@@ -131,7 +128,7 @@ export function FileUploadIngestion() {
                     {uploading ? 'Uploading...' : 'Upload & Ingest Logs'}
                 </Button>
 
-                {/* Result Message */}
+                { }
                 {result && (
                     <div
                         className={`p-4 rounded-md border ${result.success
@@ -162,7 +159,7 @@ export function FileUploadIngestion() {
                     </div>
                 )}
 
-                {/* Instructions */}
+                { }
                 <div className="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200">
                     <h4 className="text-sm font-semibold text-gray-900 mb-2">JSON Format:</h4>
                     <pre className="text-xs text-gray-700 overflow-x-auto">

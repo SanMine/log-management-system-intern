@@ -21,10 +21,15 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.pre('save', async function (next) {
-    if (this.isNew) {
-        this.id = await getNextSequence('user');
+    try {
+        if (this.isNew && !this.id) {
+            this.id = await getNextSequence('user');
+        }
+        next();
+    } catch (error: any) {
+        console.error('Error in User pre-save hook:', error);
+        next(error);
     }
-    next();
 });
 
 export const User = mongoose.model<IUser>('User', userSchema);

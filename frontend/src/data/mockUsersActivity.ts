@@ -1,4 +1,3 @@
-// Mock data for user activity page with RBAC support
 
 export interface UserActivitySummary {
     totalEvents: number;
@@ -29,14 +28,12 @@ export interface UserActivityData {
     relatedAlerts: UserAlertRow[];
 }
 
-// Map users to their tenants
 export const mockUsersByTenant: Record<string, string[]> = {
     A: ["alice", "charlie"],
     B: ["bob"],
     C: ["diana"],
 };
 
-// Complete activity data for each user
 export const mockUserActivity: Record<string, UserActivityData> = {
     alice: {
         summary: {
@@ -320,12 +317,10 @@ export const mockUserActivity: Record<string, UserActivityData> = {
     },
 };
 
-// Get all users across all tenants
 export const getAllUsers = (): string[] => {
     return Object.values(mockUsersByTenant).flat();
 };
 
-// Get users for a specific tenant
 export const getUsersForTenant = (tenantId: string): string[] => {
     if (tenantId === 'all') {
         return getAllUsers();
@@ -333,8 +328,7 @@ export const getUsersForTenant = (tenantId: string): string[] => {
     return mockUsersByTenant[tenantId] || [];
 };
 
-// Mock current user for RBAC (can be changed for testing)
 export const mockCurrentUser = {
     role: 'ADMIN' as 'ADMIN' | 'VIEWER',
-    tenantId: 'A', // Only used if role is VIEWER
+    tenantId: 'A',
 };

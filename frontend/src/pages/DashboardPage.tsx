@@ -4,7 +4,6 @@ import { SummaryCard } from '@/components/dashboard/SummaryCard';
 import { TimelineChart } from '@/components/dashboard/TimelineChart';
 import { TopListWidget } from '@/components/dashboard/TopListWidget';
 import { UploadJsonDialog } from '@/components/dashboard/UploadJsonDialog';
-// import { RecentAlerts } from '@/components/dashboard/RecentAlerts'; // Commented out - not used
 import { dashboardAPI } from '@/services/api';
 import { Activity, Server, Users, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -16,7 +15,6 @@ export function DashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // Fetch dashboard data when tenant or timeRange changes
     useEffect(() => {
         async function fetchData() {
             setIsLoading(true);
@@ -34,13 +32,10 @@ export function DashboardPage() {
         fetchData();
     }, [selectedTenant, timeRange]);
 
-    // Refresh function for after upload
     const handleRefreshData = () => {
-        // Just update state to trigger useEffect
         setSelectedTenant(prev => prev);
     };
 
-    // Loading state
     if (isLoading) {
         return (
             <DashboardLayout>
@@ -54,7 +49,6 @@ export function DashboardPage() {
         );
     }
 
-    // Error state
     if (error || !dashboardData) {
         return (
             <DashboardLayout>
@@ -87,7 +81,7 @@ export function DashboardPage() {
     return (
         <DashboardLayout>
             <div className="space-y-6">
-                {/* Page Title */}
+                {}
                 <div className="animate-slide-up">
                     <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
                         Admin Dashboard
@@ -95,7 +89,7 @@ export function DashboardPage() {
                     <p className="text-slate-500 mt-1">Monitor and analyze system logs in real-time</p>
                 </div>
 
-                {/* Upload Button and Filter Bar */}
+                {}
                 <div className="space-y-4">
                     <UploadJsonDialog onUploadSuccess={handleRefreshData} />
                     <FilterBar
@@ -106,7 +100,7 @@ export function DashboardPage() {
                     />
                 </div>
 
-                {/* Summary Cards with staggered animation */}
+                {}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="animate-slide-up">
                         <SummaryCard
@@ -138,12 +132,12 @@ export function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Timeline Chart */}
+                {}
                 <div className="animate-slide-up delay-400">
                     <TimelineChart data={dashboardData.eventsOverTime} />
                 </div>
 
-                {/* Top Lists - 3 columns on large screens */}
+                {}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="animate-slide-up delay-100">
                         <TopListWidget
@@ -171,10 +165,8 @@ export function DashboardPage() {
                     </div>
                 </div>
 
-                {/* Recent Alerts - Commented out: backend doesn't return recentAlerts */}
-                {/* <div className="animate-slide-up delay-300">
-                    <RecentAlerts alerts={dashboardData.recentAlerts} />
-                </div> */}
+                {}
+                {}
             </div>
         </DashboardLayout>
     );

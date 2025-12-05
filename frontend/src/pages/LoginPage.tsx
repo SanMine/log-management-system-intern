@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock, Mail } from 'lucide-react';
 
+import logo from '@/images/logo.png';
+
 export function LoginPage() {
     const navigate = useNavigate();
     const { login } = useAuth();
@@ -33,12 +35,12 @@ export function LoginPage() {
     return (
         <AuthLayout>
             <Card className="glass-strong shadow-2xl shadow-mono-500/20 border-mono-200 overflow-hidden">
-                {/* Gradient header */}
+                { }
                 <div className="h-2 bg-gradient-to-r from-mono-500 to-mono-600" />
 
                 <CardHeader className="space-y-4 text-center pb-6 pt-8">
-                    <div className="mx-auto h-16 w-16 rounded-full gradient-primary flex items-center justify-center shadow-lg shadow-mono-400/50 animate-scale-in">
-                        <Lock className="h-8 w-8 text-white" />
+                    <div className="mx-auto h-20 w-auto flex items-center justify-center animate-scale-in">
+                        <img src={logo} alt="Nexlog Logo" className="h-full object-contain" />
                     </div>
                     <CardTitle className="text-3xl font-bold bg-gradient-to-r from-mono-600 to-mono-500 bg-clip-text text-transparent">
                         Admin Login

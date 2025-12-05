@@ -4,7 +4,9 @@ import { AuthLayout } from '@/components/layout/AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserPlus, Mail, Lock, Building } from 'lucide-react';
+import { Mail, Lock, Building } from 'lucide-react';
+
+import logo from '@/images/logo.png';
 
 export function SignupPage() {
     const navigate = useNavigate();
@@ -20,8 +22,7 @@ export function SignupPage() {
         setIsLoading(true);
 
         try {
-            // Call signup API
-            const response = await fetch('http://localhost:5004/api/auth/signup', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password, tenantName }),
@@ -33,13 +34,11 @@ export function SignupPage() {
                 throw new Error(data.error || 'Signup failed');
             }
 
-            // Store token and user
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
 
-            // Navigate to dashboard
             navigate('/dashboard');
-            window.location.reload(); // Reload to update auth context
+            window.location.reload();
         } catch (err: any) {
             setError(err.message || 'Signup failed. Please try again.');
         } finally {
@@ -50,12 +49,11 @@ export function SignupPage() {
     return (
         <AuthLayout>
             <Card className="glass-strong shadow-2xl shadow-mono-500/20 border-mono-200 overflow-hidden">
-                {/* Gradient header */}
                 <div className="h-2 bg-gradient-to-r from-mono-500 to-mono-600" />
 
                 <CardHeader className="space-y-4 text-center pb-6 pt-8">
-                    <div className="mx-auto h-16 w-16 rounded-full gradient-primary flex items-center justify-center shadow-lg shadow-mono-400/50 animate-scale-in">
-                        <UserPlus className="h-8 w-8 text-white" />
+                    <div className="mx-auto h-20 w-auto flex items-center justify-center animate-scale-in">
+                        <img src={logo} alt="Nexlog Logo" className="h-full object-contain" />
                     </div>
                     <CardTitle className="text-3xl font-bold bg-gradient-to-r from-mono-600 to-mono-500 bg-clip-text text-transparent">
                         Create Account

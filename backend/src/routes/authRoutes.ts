@@ -13,22 +13,28 @@ const router = express.Router();
  * Register a new viewer account
  */
 router.post('/signup', async (req: Request, res: Response) => {
+    console.log('Signup request received:', req.body);
     try {
         const { email, password, tenantName } = req.body;
 
         if (!email || !password || !tenantName) {
+            console.log('Missing fields');
             res.status(400).json({ error: 'Email, password, and tenant name are required' });
             return;
         }
 
+        console.log('Checking existing user...');
         const existingUser = await User.findOne({ email });
         if (existingUser) {
+            console.log('User already exists');
             res.status(400).json({ error: 'User with this email already exists' });
             return;
         }
 
+        console.log('Finding/Creating tenant...');
         let tenant = await Tenant.findOne({ name: tenantName });
         if (!tenant) {
+            console.log('Creating new tenant...');
             const { getNextSequence } = await import('../models/Counter');
             const tenantId = await getNextSequence('tenant');
             tenant = await Tenant.create({
@@ -36,17 +42,20 @@ router.post('/signup', async (req: Request, res: Response) => {
                 name: tenantName,
                 key: tenantName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
             });
-            console.log(` Auto-created tenant during signup: ${tenantId} (${tenantName})`);
+            console.log(`Auto-created tenant: ${tenantId}`);
         }
 
+        console.log('Hashing password...');
         const passwordHash = await bcrypt.hash(password, 10);
 
+        console.log('Creating user...');
         const user = await User.create({
             email,
             passwordHash,
             role: 'VIEWER',
             tenantId: tenant.id,
         });
+        console.log('User created:', user.id);
 
         const token = jwt.sign(
             {
@@ -59,6 +68,7 @@ router.post('/signup', async (req: Request, res: Response) => {
             { expiresIn: '7d' }
         );
 
+        console.log('Signup successful, sending response');
         res.status(201).json({
             success: true,
             message: 'Account created successfully',
@@ -71,7 +81,7 @@ router.post('/signup', async (req: Request, res: Response) => {
             },
         });
     } catch (error: any) {
-        console.error('Signup error:', error);
+        console.error('Signup error details:', error);
         res.status(500).json({ error: 'Failed to create account', message: error.message });
     }
 });

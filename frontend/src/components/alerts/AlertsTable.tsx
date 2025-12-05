@@ -69,22 +69,20 @@ export function AlertsTable({ alerts }: AlertsTableProps) {
     );
 }
 
-// Status Update Dropdown Component
 function StatusUpdateDropdown({ alertId, currentStatus }: { alertId: number; currentStatus: string }) {
     const { user } = useAuth();
     const [status, setStatus] = useState(currentStatus);
     const [isUpdating, setIsUpdating] = useState(false);
 
-    // Only viewers can update status - admins are read-only
     const isReadOnly = user?.role === 'ADMIN';
 
     const handleStatusChange = async (newStatus: string) => {
-        if (isReadOnly) return; // Prevent updates for admin
+        if (isReadOnly) return;
 
         setIsUpdating(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5004/api/alerts/${alertId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/alerts/${alertId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -102,7 +100,6 @@ function StatusUpdateDropdown({ alertId, currentStatus }: { alertId: number; cur
         } catch (error: any) {
             console.error('Failed to update alert status:', error);
             alert(error.message || 'Failed to update alert status');
-            // Revert on error
             setStatus(currentStatus);
         } finally {
             setIsUpdating(false);
@@ -124,7 +121,6 @@ function StatusUpdateDropdown({ alertId, currentStatus }: { alertId: number; cur
 
     const statusConfig = getStatusConfig(status);
 
-    // If read-only (admin), show badge instead of dropdown
     if (isReadOnly) {
         return (
             <div className="relative group">
@@ -140,7 +136,6 @@ function StatusUpdateDropdown({ alertId, currentStatus }: { alertId: number; cur
         );
     }
 
-    // Viewer: show editable dropdown
     return (
         <select
             value={status}

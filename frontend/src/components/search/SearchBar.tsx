@@ -13,18 +13,6 @@ interface SearchBarProps {
     resultCount?: number;
 }
 
-/**
- * SearchBar Component
- * 
- * A reusable search bar with pagination controls for filtering log events.
- * 
- * Features:
- * - Free-text search input
- * - Search button (or press Enter)
- * - Clear button to reset search
- * - Pagination controls (Previous/Next)
- * - Loading state indicator
- */
 export function SearchBar({
     onSearch,
     onClear,
@@ -34,30 +22,25 @@ export function SearchBar({
     hasResults,
     resultCount,
 }: SearchBarProps) {
-    // Local state for the search input
     const [searchInput, setSearchInput] = useState('');
 
-    // Handle search submission
     const handleSearch = () => {
         if (searchInput.trim()) {
-            onSearch(searchInput.trim(), 1); // Start from page 1
+            onSearch(searchInput.trim(), 1);
         }
     };
 
-    // Handle Enter key press
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             handleSearch();
         }
     };
 
-    // Handle clear/reset
     const handleClear = () => {
         setSearchInput('');
         onClear();
     };
 
-    // Handle pagination
     const handlePrevious = () => {
         if (currentPage > 1) {
             onSearch(searchInput, currentPage - 1);
@@ -72,7 +55,7 @@ export function SearchBar({
 
     return (
         <div className="space-y-3">
-            {/* Search Input Row */}
+            {}
             <div className="flex items-center gap-3">
                 <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -117,7 +100,7 @@ export function SearchBar({
                 )}
             </div>
 
-            {/* Pagination Controls (shown when there are search results) */}
+            {}
             {hasResults && totalPages > 0 && (
                 <div className="flex items-center justify-between text-sm">
                     <div className="text-slate-600">

@@ -1,12 +1,9 @@
-// API configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5004/api';
 
-// Get auth token from localStorage
 function getToken(): string | null {
     return localStorage.getItem('token');
 }
 
-// Set auth headers
 function getAuthHeaders(): HeadersInit {
     const token = getToken();
     return {
@@ -15,7 +12,6 @@ function getAuthHeaders(): HeadersInit {
     };
 }
 
-// API client
 async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
@@ -33,7 +29,6 @@ async function apiCall<T>(endpoint: string, options: RequestInit = {}): Promise<
     return response.json();
 }
 
-// Auth API
 export const authAPI = {
     login: (email: string, password: string) =>
         apiCall<{ token: string; user: { id: number; email: string; role: string; tenantId: number | null } }>(
@@ -45,7 +40,6 @@ export const authAPI = {
         ),
 };
 
-// Dashboard API Types
 export interface DashboardOverviewResponse {
     totalEvents: number;
     uniqueIps: number;
@@ -57,7 +51,6 @@ export interface DashboardOverviewResponse {
     topEventTypes: { event_type: string; count: number }[];
 }
 
-// Dashboard API
 export const dashboardAPI = {
     getData: (tenantId?: string | number, timeRange?: string): Promise<DashboardOverviewResponse> => {
         const params = new URLSearchParams();
@@ -68,7 +61,6 @@ export const dashboardAPI = {
     },
 };
 
-// Alerts API
 export const alertsAPI = {
     getAlerts: (tenantId?: string | number, status?: string, timeRange?: string) => {
         const params = new URLSearchParams();
@@ -86,7 +78,6 @@ export const alertsAPI = {
         }),
 };
 
-// Users API
 export const usersAPI = {
     getUsers: (tenantId?: string | number) => {
         const params = new URLSearchParams();
@@ -100,13 +91,11 @@ export const usersAPI = {
         if (tenantId) params.append('tenantId', String(tenantId));
         if (timeRange) params.append('timeRange', timeRange);
 
-        // Encode username to handle special characters like backslashes
         const encodedUsername = encodeURIComponent(username);
         return apiCall<any>(`/users/${encodedUsername}/activity?${params}`);
     },
 };
 
-// Tenants API
 export const tenantsAPI = {
     getTenants: () => apiCall<any[]>('/tenants'),
 };

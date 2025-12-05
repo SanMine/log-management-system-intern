@@ -31,7 +31,6 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
         const selectedFile = e.target.files?.[0];
         if (!selectedFile) return;
 
-        // Validate file type - accept JSON or CSV
         const isJson = selectedFile.type === 'application/json' || selectedFile.name.endsWith('.json');
         const isCsv = selectedFile.type === 'text/csv' || selectedFile.type === 'application/csv' || selectedFile.name.endsWith('.csv');
 
@@ -78,11 +77,9 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
                 });
                 setFile(null);
 
-                // Reset file input
                 const fileInput = document.getElementById('json-file-input') as HTMLInputElement;
                 if (fileInput) fileInput.value = '';
 
-                // Call success callback and close dialog after 2 seconds
                 setTimeout(() => {
                     onUploadSuccess?.();
                     setOpen(false);
@@ -124,7 +121,7 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
                 </DialogHeader>
 
                 <div className="space-y-4 py-4">
-                    {/* File Input */}
+                    { }
                     <div className="space-y-2">
                         <label
                             htmlFor="json-file-input"
@@ -148,7 +145,7 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
                         )}
                     </div>
 
-                    {/* Upload Button */}
+                    { }
                     <Button
                         onClick={handleUpload}
                         disabled={!file || uploading}
@@ -167,7 +164,7 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
                         )}
                     </Button>
 
-                    {/* Result Alert */}
+                    { }
                     {result && (
                         <Alert variant={result.success ? 'default' : 'destructive'}>
                             <div className="flex items-start gap-2">
@@ -188,33 +185,41 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
                         </Alert>
                     )}
 
-                    {/* Format Example */}
-                    <div className="mt-4 rounded-lg border bg-muted/50 p-3">
-                        <p className="text-xs font-semibold text-muted-foreground mb-2">
-                            JSON Format Example:
+                    { }
+                    <div className="mt-4 rounded-lg border bg-muted/50 p-4">
+                        <p className="text-xs font-semibold text-foreground mb-3">
+                            Format Examples:
                         </p>
-                        <pre className="text-xs overflow-x-auto">
-                            {`JSON Format:
-                            [
-                            {
-                                "tenant": "demo.com",
-                                "source": "api",
-                                "event_type": "login_success",
-                                "user": "username",
-                                "ip": "192.168.1.1"
-                            }
-                            ]
 
-                            CSV Format:
-                            tenant,source,event_type,user,ip
-                            demo.com,api,login_success,username,192.168.1.1`}
-                                                    </pre>
-                                                    <p className="text-xs text-muted-foreground mt-2">
-                                                        Required: <code className="text-xs">tenant</code>, <code className="text-xs">source</code>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </DialogContent>
-                                    </Dialog>
-                                );
-                            }
+                        <div className="space-y-3">
+                            { }
+                            <div>
+                                <p className="text-xs font-medium text-muted-foreground mb-1">JSON Format:</p>
+                                <pre className="text-xs bg-background rounded p-2 overflow-x-auto border">{`[
+  {
+    "tenant": "demo.com",
+    "source": "api",
+    "event_type": "login_success",
+    "user": "username",
+    "ip": "192.168.1.1"
+  }
+]`}</pre>
+                            </div>
+
+                            { }
+                            <div>
+                                <p className="text-xs font-medium text-muted-foreground mb-1">CSV Format:</p>
+                                <pre className="text-xs bg-background rounded p-2 overflow-x-auto border">{`tenant,source,event_type,user,ip
+demo.com,api,login_success,username,192.168.1.1`}</pre>
+                            </div>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground mt-3 pt-3 border-t">
+                            <strong>Required:</strong> <code className="text-xs bg-background px-1 py-0.5 rounded">tenant</code>, <code className="text-xs bg-background px-1 py-0.5 rounded">source</code>
+                        </p>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}

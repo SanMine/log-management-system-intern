@@ -12,7 +12,6 @@ interface IPDisplayProps {
 }
 
 export function IPDisplay({ alert }: IPDisplayProps) {
-    // Case 1: Multiple IPs (Distributed Attack)
     if (alert.involved_ips && alert.involved_ips.length > 0) {
         const totalIPs = alert.involved_ips.length;
         const firstIP = alert.involved_ips[0];
@@ -51,7 +50,6 @@ export function IPDisplay({ alert }: IPDisplayProps) {
         );
     }
 
-    // Case 2: Single IP
     if (alert.ip) {
         return (
             <div className="font-mono text-sm text-mono-600">
@@ -60,7 +58,6 @@ export function IPDisplay({ alert }: IPDisplayProps) {
         );
     }
 
-    // Case 3: No IP
     return (
         <div className="text-slate-400 text-sm">
             —

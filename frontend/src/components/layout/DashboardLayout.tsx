@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3, Bell, LogOut, ShieldCheck, Users } from 'lucide-react';
+import { BarChart3, Bell, LogOut, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+
+import logo from '@/images/logo.png';
 
 interface DashboardLayoutProps {
     children: ReactNode;
@@ -24,17 +26,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            {/* Header - Clean White with Border */}
+            {/* Top Navigation */}
             <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-2">
-                            <div className="bg-brand-600 p-1.5 rounded-lg">
-                                <ShieldCheck className="w-5 h-5 text-white" />
+                            <div className="h-10 w-auto">
+                                <img src={logo} alt="Nexlog Logo" className="h-full w-auto object-contain" />
                             </div>
-                            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                                Nex<span className="text-brand-600">log</span>
-                            </h1>
+
                         </div>
 
                         <nav className="flex items-center space-x-1">
@@ -91,7 +91,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
             </header>
 
-            {/* Main Content */}
+            { }
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
                 {children}
             </main>

@@ -9,6 +9,7 @@
         "start": "node dist/server.js",
         "seed": "ts-node-dev src/seed/seedData.ts",
         "seed:admin": "ts-node-dev src/scripts/seedSuperAdmin.ts",
+        "fixCounter": "ts-node-dev src/scripts/fixCounter.ts",
         "test": "jest --detectOpenHandles --forceExit"
     },
     "keywords": [

@@ -1,4 +1,3 @@
-// Mock data for the log management system
 
 export interface SummaryStats {
     totalEvents: number;
@@ -33,7 +32,6 @@ export interface Alert {
     status: 'OPEN' | 'INVESTIGATING' | 'RESOLVED';
 }
 
-// Summary statistics
 export const summaryStats: SummaryStats = {
     totalEvents: 45678,
     uniqueIPs: 1234,
@@ -41,7 +39,6 @@ export const summaryStats: SummaryStats = {
     totalAlerts: 23,
 };
 
-// Timeline data (events over time)
 export const timelineData: TimelineDataPoint[] = [
     { time: '09:00', events: 245 },
     { time: '09:15', events: 312 },
@@ -60,7 +57,6 @@ export const timelineData: TimelineDataPoint[] = [
     { time: '12:30', events: 334 },
 ];
 
-// Top IPs
 export const topIPs: TopIP[] = [
     { ip: '203.0.113.7', events: 158 },
     { ip: '10.0.1.10', events: 142 },
@@ -69,7 +65,6 @@ export const topIPs: TopIP[] = [
     { ip: '10.10.10.45', events: 98 },
 ];
 
-// Top Users
 export const topUsers: TopUser[] = [
     { user: 'alice', events: 130 },
     { user: 'bob', events: 120 },
@@ -78,7 +73,6 @@ export const topUsers: TopUser[] = [
     { user: 'eve', events: 65 },
 ];
 
-// Recent alerts for dashboard
 export const recentAlerts: Alert[] = [
     {
         id: '1',
@@ -112,7 +106,6 @@ export const recentAlerts: Alert[] = [
     },
 ];
 
-// Full alerts for alerts page
 export const allAlerts: Alert[] = [
     {
         id: '1',

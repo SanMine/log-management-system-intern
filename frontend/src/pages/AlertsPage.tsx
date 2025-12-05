@@ -22,7 +22,6 @@ export function AlertsPage() {
     const [error, setError] = useState('');
     const { tenants: tenantOptions } = useTenants();
 
-    // Fetch alerts when filters change
     useEffect(() => {
         async function fetchAlerts() {
             setIsLoading(true);
@@ -50,7 +49,7 @@ export function AlertsPage() {
     return (
         <DashboardLayout>
             <div className="space-y-6">
-                {/* Page Title */}
+                {}
                 <div className="animate-slide-up">
                     <h2 className="text-4xl font-bold bg-gradient-to-r from-mono-600 to-mono-500 bg-clip-text text-transparent">
                         Alerts Management
@@ -58,7 +57,7 @@ export function AlertsPage() {
                     <p className="text-gray-600 mt-2">View and manage security alerts</p>
                 </div>
 
-                {/* Filter Bar */}
+                {}
                 <div className="glass-strong rounded-xl p-6 border-mono-200 shadow-lg shadow-mono-300/20 animate-slide-up delay-100">
                     <div className="flex flex-wrap gap-4 items-center">
                         <div className="flex-1 min-w-[200px]">
@@ -129,7 +128,7 @@ export function AlertsPage() {
                     </div>
                 </div>
 
-                {/* Alerts Count */}
+                {}
                 {!isLoading && !error && (
                     <div className="text-sm text-gray-600 animate-fade-in delay-200 flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-mono-500 animate-pulse" />
@@ -137,7 +136,7 @@ export function AlertsPage() {
                     </div>
                 )}
 
-                {/* Loading State */}
+                {}
                 {isLoading && (
                     <div className="flex items-center justify-center py-12">
                         <div className="text-center">
@@ -147,7 +146,7 @@ export function AlertsPage() {
                     </div>
                 )}
 
-                {/* Error State */}
+                {}
                 {error && !isLoading && (
                     <div className="flex items-center justify-center py-12">
                         <div className="text-center">
@@ -158,7 +157,7 @@ export function AlertsPage() {
                     </div>
                 )}
 
-                {/* Alerts Table */}
+                {}
                 {!isLoading && !error && (
                     <div className="animate-slide-up delay-300">
                         <AlertsTable alerts={alerts} />

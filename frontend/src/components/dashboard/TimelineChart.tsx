@@ -5,25 +5,19 @@ interface TimelineChartProps {
     data: { time: string; count: number }[];
 }
 
-/**
- * Format time labels based on the bucket type
- */
 function formatTimeLabel(timeStr: string): string {
     if (!timeStr) return '';
 
-    // Day format: YYYY-MM-DD
     if (timeStr.length === 10 && timeStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
         const date = new Date(timeStr);
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
-    // Hour format: YYYY-MM-DDTHH:00:00Z
     if (timeStr.includes('T') && timeStr.endsWith(':00:00Z')) {
         const date = new Date(timeStr);
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
     }
 
-    // Minute format: YYYY-MM-DDTHH:MM:00Z
     if (timeStr.includes('T') && timeStr.endsWith(':00Z')) {
         const date = new Date(timeStr);
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -33,7 +27,6 @@ function formatTimeLabel(timeStr: string): string {
 }
 
 export function TimelineChart({ data }: TimelineChartProps) {
-    // Handle empty state
     if (!data || data.length === 0) {
         return (
             <Card className="card-premium animate-slide-up overflow-hidden">

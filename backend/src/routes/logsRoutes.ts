@@ -83,6 +83,7 @@ router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) =>
                 { src_ip: searchRegex },
                 { dst_ip: searchRegex },
                 { event_type: searchRegex },
+                { source: searchRegex },
                 { action: searchRegex },
                 { host: searchRegex },
                 { process: searchRegex },
@@ -94,6 +95,14 @@ router.get('/search', authMiddleware, async (req: AuthRequest, res: Response) =>
             const statusCodeNum = parseInt(searchTerm, 10);
             if (!isNaN(statusCodeNum)) {
                 orConditions.push({ status_code: statusCodeNum });
+            }
+
+            // Search by tenant name
+            const { Tenant } = await import('../models/Tenant');
+            const matchingTenants = await Tenant.find({ name: searchRegex }).lean();
+            if (matchingTenants.length > 0) {
+                const tenantIds = matchingTenants.map(t => t.id);
+                orConditions.push({ tenantId: { $in: tenantIds } });
             }
 
             query.$or = orConditions;

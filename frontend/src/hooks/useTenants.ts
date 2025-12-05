@@ -18,7 +18,6 @@ export function useTenants() {
             try {
                 const data = await tenantsAPI.getTenants();
 
-                // Transform backend data to dropdown options
                 const tenantOptions: TenantOption[] = [
                     { value: 'all', label: 'All Tenants' },
                     ...data.map((tenant: any) => ({
@@ -31,7 +30,6 @@ export function useTenants() {
             } catch (err: any) {
                 console.error('Failed to fetch tenants:', err);
                 setError(err.message || 'Failed to load tenants');
-                // Fallback to default options
                 setTenants([
                     { value: 'all', label: 'All Tenants' },
                     { value: '1', label: 'Tenant 1' },

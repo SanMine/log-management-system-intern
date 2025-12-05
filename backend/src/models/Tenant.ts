@@ -17,10 +17,15 @@ const tenantSchema = new Schema<ITenant>(
 );
 
 tenantSchema.pre('save', async function (next) {
-    if (this.isNew) {
-        this.id = await getNextSequence('tenant');
+    try {
+        if (this.isNew && !this.id) {
+            this.id = await getNextSequence('tenant');
+        }
+        next();
+    } catch (error: any) {
+        console.error('Error in Tenant pre-save hook:', error);
+        next(error);
     }
-    next();
 });
 
 export const Tenant = mongoose.model<ITenant>('Tenant', tenantSchema);

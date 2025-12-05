@@ -138,13 +138,12 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
 
         if (normalizedLogs.length > 0) {
             try {
-                const { getNextSequence } = await import('../models/Counter');
-
+                // Use save() to trigger pre-save hook for consistent ID assignment
                 for (const log of normalizedLogs) {
-                    log.id = await getNextSequence('logEvent');
+                    const logEvent = new LogEvent(log);
+                    await logEvent.save();
+                    insertedDocs.push(logEvent);
                 }
-
-                insertedDocs = await LogEvent.insertMany(normalizedLogs);
                 console.log(` Inserted ${insertedDocs.length} logs into database`);
             } catch (error: any) {
                 console.error('Database insert error:', error);

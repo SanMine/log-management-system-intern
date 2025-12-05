@@ -1,4 +1,3 @@
-// Mock dashboard data for different tenants
 export interface DashboardData {
     totalEvents: number;
     uniqueIps: number;

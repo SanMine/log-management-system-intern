@@ -17,7 +17,6 @@ interface TenantFilterDropdownProps {
 export function TenantFilterDropdown({ value, onChange, options }: TenantFilterDropdownProps) {
     const { user } = useAuth();
 
-    // For viewers, automatically set to their tenant and disable changing
     useEffect(() => {
         if (user?.role === 'VIEWER' && user?.tenantId !== null) {
             const viewerTenant = options.find(opt => opt.value === String(user.tenantId));
@@ -27,7 +26,6 @@ export function TenantFilterDropdown({ value, onChange, options }: TenantFilterD
         }
     }, [user, options, onChange, value]);
 
-    // Filter options based on role
     const filteredOptions = user?.role === 'VIEWER' && user?.tenantId !== null
         ? options.filter(opt => opt.value === String(user.tenantId))
         : options;
