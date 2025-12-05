@@ -4,6 +4,7 @@ import { parse } from 'csv-parse/sync';
 import { LogEvent } from '../models/LogEvent';
 import { normalizeLog } from '../normalizers';
 import * as alertService from '../services/alertService';
+import { AuthRequest, authMiddleware } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -45,7 +46,8 @@ function parseCsvFile(fileContent: string): any[] {
     }
 }
 
-router.post('/file', upload.single('file'), async (req: Request, res: Response) => {
+// Auth middleware added
+router.post('/file', authMiddleware, upload.single('file'), async (req: AuthRequest, res: Response) => {
     try {
         if (!req.file) {
             res.status(400).json({
