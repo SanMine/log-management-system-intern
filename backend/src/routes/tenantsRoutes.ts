@@ -4,21 +4,13 @@ import { Tenant } from '../models/Tenant';
 
 const router = express.Router();
 
-/**
- * GET /api/tenants
- * Get list of tenants
- * Admin: all tenants
- * Viewer: only their own tenant
- */
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     try {
         let tenants: any[];
 
         if (req.user?.role === 'ADMIN') {
-            // Admin: get all tenants
             tenants = await Tenant.find().select('id name key');
         } else if (req.user?.tenantId) {
-            // Viewer: only their own tenant
             tenants = await Tenant.find({ id: req.user.tenantId }).select('id name key');
         } else {
             tenants = [];
@@ -31,12 +23,6 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     }
 });
 
-/**
- * POST /api/tenants
- * Create a new tenant (Admin only)
- *
- * Body: { name: string, key: string }
- */
 router.post(
     '/',
     authMiddleware,
@@ -65,15 +51,10 @@ router.post(
     }
 );
 
-/**
- * GET /api/tenants/:id
- * Get a specific tenant
- */
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     try {
         const tenantId = parseInt(req.params.id, 10);
 
-        // RBAC: Viewer can only see their own tenant
         if (req.user?.role === 'VIEWER' && req.user.tenantId !== tenantId) {
             res.status(403).json({ error: 'Access denied' });
             return;

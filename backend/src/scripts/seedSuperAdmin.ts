@@ -4,11 +4,6 @@ import { User } from '../models/User';
 import { config } from '../config/env';
 import { connectDB } from '../config/db';
 
-/**
- * Seed the super admin account
- * Email: superadmin@gmail.com
- * Password: super12345
- */
 async function seedSuperAdmin() {
     try {
         await connectDB();
@@ -16,7 +11,6 @@ async function seedSuperAdmin() {
         const email = 'superadmin@gmail.com';
         const password = 'super12345';
 
-        // Check if super admin already exists
         const existingAdmin = await User.findOne({ email });
         if (existingAdmin) {
             console.log(' Super admin already exists');
@@ -24,15 +18,13 @@ async function seedSuperAdmin() {
             return;
         }
 
-        // Hash password
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Create super admin
         const admin = await User.create({
             email,
             passwordHash,
             role: 'ADMIN',
-            tenantId: null, // null = can access all tenants
+            tenantId: null,
         });
 
         console.log(' Super admin created successfully!');
@@ -47,7 +39,6 @@ async function seedSuperAdmin() {
     }
 }
 
-// Run if called directly
 if (require.main === module) {
     seedSuperAdmin();
 }

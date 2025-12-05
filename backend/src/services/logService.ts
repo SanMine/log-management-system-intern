@@ -2,27 +2,17 @@ import { LogEvent, ILogEvent } from '../models/LogEvent';
 import { normalizeLog } from '../normalizers';
 import * as alertService from './alertService';
 
-/**
- * Create a new log event from raw data
- * Uses the unified normalizer to convert any log format to central schema
- */
 export async function createLogEvent(raw: any): Promise<ILogEvent> {
-    // Normalize using the unified pipeline
     const normalized = await normalizeLog(raw);
 
-    // Create LogEvent document
     const logEvent = new LogEvent(normalized);
     await logEvent.save();
 
-    // Process alert rules
     await alertService.processEvent(logEvent);
 
     return logEvent;
 }
 
-/**
- * Get log events with filters
- */
 export async function getLogEvents(filters: {
     tenantId?: number | null;
     user?: string;

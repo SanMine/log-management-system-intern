@@ -4,25 +4,14 @@ import { getAlerts, updateAlertStatus } from '../services/alertService';
 
 const router = express.Router();
 
-/**
- * GET /api/alerts
- * Get alerts with filters
- *
- * Query params:
- *   - tenantId?: number | "all"
- *   - status?: "OPEN" | "INVESTIGATING" | "RESOLVED" | "all"
- *   - timeRange?: "15m" | "1h" | "24h" | "7d"
- */
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     try {
         const requestedTenantId = req.query.tenantId as string | undefined;
         const status = req.query.status as string | undefined;
         const timeRange = req.query.timeRange as string | undefined;
 
-        // Apply RBAC tenant filtering
         const tenantId = getTenantFilter(req.user, requestedTenantId);
 
-        // Get alerts
         const alerts = await getAlerts({
             tenantId,
             status,
@@ -36,18 +25,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     }
 });
 
-/**
- * PATCH /api/alerts/:id
- * Update alert status
- *
- * RBAC: Only VIEWER accounts can update alert status
- * Super Admin can only view (read-only)
- *
- * Body: { status: "OPEN" | "INVESTIGATING" | "RESOLVED" }
- */
 router.patch('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     try {
-        // RBAC: Only viewers can update alert status
         if (req.user?.role !== 'VIEWER') {
             res.status(403).json({
                 error: 'Forbidden',

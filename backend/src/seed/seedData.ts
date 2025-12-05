@@ -7,17 +7,12 @@ import { LogEvent } from '../models/LogEvent';
 import { Alert } from '../models/Alert';
 import { Counter } from '../models/Counter';
 
-/**
- * Seed script to populate the database with Lumiq-thailand.com data
- */
 async function seed() {
     try {
         console.log(' Starting seed process...');
 
-        // Connect to database
         await connectDB();
 
-        // Clear existing data
         console.log('  Clearing existing data...');
         await Tenant.deleteMany({});
         await User.deleteMany({});
@@ -25,30 +20,22 @@ async function seed() {
         await Alert.deleteMany({});
         await Counter.deleteMany({});
 
-        // =========================
-        // Create Tenant
-        // =========================
         console.log(' Creating tenant...');
         const lumiqTenant = new Tenant({ name: 'Lumiq-thailand.com', key: 'LUMIQ' });
         await lumiqTenant.save();
         console.log(` Created tenant: ${lumiqTenant.id} (${lumiqTenant.name})`);
 
-        // =========================
-        // Create Users
-        // =========================
         console.log(' Creating users...');
 
-        // Super Admin (system-wide access)
         const adminPassword = await bcrypt.hash('admin123', 10);
         const admin = new User({
             email: 'admin@system.com',
             passwordHash: adminPassword,
             role: 'ADMIN',
-            tenantId: null, // null = access to all tenants
+            tenantId: null,
         });
         await admin.save();
 
-        // Tenant Admin for Lumiq-thailand.com - Jimmy
         const jimmyPassword = await bcrypt.hash('jimmy123', 10);
         const jimmy = new User({
             email: 'admin@lumiq.com',
@@ -58,7 +45,6 @@ async function seed() {
         });
         await jimmy.save();
 
-        // Viewer for Lumiq tenant - John
         const johnPassword = await bcrypt.hash('john123', 10);
         const john = new User({
             email: 'john@lumiq.com',
@@ -68,7 +54,6 @@ async function seed() {
         });
         await john.save();
 
-        // Viewer for Lumiq tenant - Franco
         const francoPassword = await bcrypt.hash('franco123', 10);
         const franco = new User({
             email: 'franco@lumiq.com',
@@ -80,15 +65,11 @@ async function seed() {
 
         console.log(` Created users: Admin, Jimmy, John, Franco`);
 
-        // =========================
-        // Create Log Events
-        // =========================
         console.log(' Creating log events...');
 
         const now = new Date();
         const events: any[] = [];
 
-        // Event data from user's JSON
         const eventData = [
             {
                 event_type: 'login_success',
@@ -182,7 +163,6 @@ async function seed() {
             },
         ];
 
-        // Create log events
         eventData.forEach((data, index) => {
             const timestamp = new Date(now.getTime() - data.hoursAgo * 60 * 60 * 1000);
             events.push(
@@ -207,9 +187,6 @@ async function seed() {
         await LogEvent.insertMany(events);
         console.log(` Created ${events.length} log events`);
 
-        // =========================
-        // Create Alerts
-        // =========================
         console.log(' Creating alerts...');
 
         const alerts = [

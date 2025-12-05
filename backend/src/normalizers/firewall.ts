@@ -2,21 +2,9 @@ import { CentralLog } from '../types/CentralLog';
 import { resolveTenantId, mapActionToSeverity } from './base';
 import { parseSyslog } from './syslogUtils';
 
-/**
- * Normalize Firewall syslog logs
- * 
- * Example input:
- * {
- *   "tenant": "demo",
- *   "source": "firewall",
- *   "raw": "<134>Aug 20 12:44:56 fw01 vendor=demo product=ngfw action=deny src=10.0.1.10 dst=8.8.8.8"
- * }
- */
 export async function normalizeFirewallLog(raw: any): Promise<CentralLog> {
-    // Parse the syslog string
     const parsed = parseSyslog(raw.raw);
 
-    // Extract fields with common variations
     const action = parsed.action || parsed.act;
     const vendor = parsed.vendor || parsed.vend;
     const product = parsed.product || parsed.prod;
@@ -37,18 +25,15 @@ export async function normalizeFirewallLog(raw: any): Promise<CentralLog> {
         action: action,
         severity: parsed.severity ? Number(parsed.severity) : mapActionToSeverity(action),
 
-        // Network fields
         src_ip: srcIp,
         src_port: srcPort ? Number(srcPort) : undefined,
         dst_ip: dstIp,
         dst_port: dstPort ? Number(dstPort) : undefined,
         protocol: protocol,
 
-        // Security fields
         rule_name: parsed.rule || parsed.rule_name,
         rule_id: parsed.rule_id || parsed.ruleid,
 
-        // Store original
         raw: raw.raw
     };
 

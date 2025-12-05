@@ -1,20 +1,14 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { getNextSequence } from './Counter';
 
-/**
- * User interface
- */
 export interface IUser extends Document {
-    id: number; // Auto-increment numeric ID
+    id: number;
     email: string;
     passwordHash: string;
     role: 'ADMIN' | 'VIEWER';
-    tenantId: number | null; // Admin: null (can see all), Viewer: specific tenant
+    tenantId: number | null;
 }
 
-/**
- * User schema
- */
 const userSchema = new Schema<IUser>(
     {
         id: { type: Number, unique: true },
@@ -26,7 +20,6 @@ const userSchema = new Schema<IUser>(
     { timestamps: true }
 );
 
-// Auto-increment id before saving
 userSchema.pre('save', async function (next) {
     if (this.isNew) {
         this.id = await getNextSequence('user');

@@ -1,11 +1,6 @@
 import { Tenant } from '../models/Tenant';
 import { ILogEvent } from '../models/LogEvent';
 
-/**
- * Normalize incoming HTTP log to LogEvent format
- * @param raw - Raw log data from HTTP request
- * @returns Partial LogEvent data
- */
 export async function normalizeHttpLog(raw: any): Promise<Partial<ILogEvent>> {
     const normalized: Partial<ILogEvent> = {
         timestamp: raw.timestamp && raw.timestamp !== '' ? new Date(raw.timestamp) : new Date(),
@@ -18,12 +13,10 @@ export async function normalizeHttpLog(raw: any): Promise<Partial<ILogEvent>> {
         raw: raw,
     };
 
-    // Resolve tenant (auto-create if doesn't exist)
     if (raw.tenant || raw.tenantName) {
         const tenantName = raw.tenant || raw.tenantName;
         let tenant = await Tenant.findOne({ name: tenantName });
 
-        // Auto-create tenant if it doesn't exist
         if (!tenant) {
             console.log(` Auto-creating tenant: ${tenantName}`);
             tenant = new Tenant({

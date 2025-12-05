@@ -16,37 +16,31 @@ router.post('/signup', async (req: Request, res: Response) => {
     try {
         const { email, password, tenantName } = req.body;
 
-        // Validation
         if (!email || !password || !tenantName) {
             res.status(400).json({ error: 'Email, password, and tenant name are required' });
             return;
         }
 
-        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             res.status(400).json({ error: 'User with this email already exists' });
             return;
         }
 
-        // Find or create tenant
         let tenant = await Tenant.findOne({ name: tenantName });
         if (!tenant) {
-            // Auto-create tenant for signup
             const { getNextSequence } = await import('../models/Counter');
             const tenantId = await getNextSequence('tenant');
             tenant = await Tenant.create({
                 id: tenantId,
                 name: tenantName,
-                key: tenantName.toLowerCase().replace(/[^a-z0-9]/g, '_'), // Generate key from name
+                key: tenantName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
             });
             console.log(` Auto-created tenant during signup: ${tenantId} (${tenantName})`);
         }
 
-        // Hash password
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Create viewer user
         const user = await User.create({
             email,
             passwordHash,
@@ -54,7 +48,6 @@ router.post('/signup', async (req: Request, res: Response) => {
             tenantId: tenant.id,
         });
 
-        // Generate JWT token
         const token = jwt.sign(
             {
                 id: user.id,
@@ -99,21 +92,18 @@ router.post('/login', async (req: Request, res: Response) => {
             return;
         }
 
-        // Find user by email
         const user = await User.findOne({ email });
         if (!user) {
             res.status(401).json({ error: 'Invalid credentials' });
             return;
         }
 
-        // Verify password
         const isValidPassword = await bcrypt.compare(password, user.passwordHash);
         if (!isValidPassword) {
             res.status(401).json({ error: 'Invalid credentials' });
             return;
         }
 
-        // Generate JWT token
         const token = jwt.sign(
             {
                 id: user.id,
@@ -125,7 +115,6 @@ router.post('/login', async (req: Request, res: Response) => {
             { expiresIn: '7d' }
         );
 
-        // Return token and user data
         res.json({
             success: true,
             message: 'Login successful',

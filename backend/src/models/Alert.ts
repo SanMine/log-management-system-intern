@@ -1,26 +1,20 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { getNextSequence } from './Counter';
 
-/**
- * Alert interface
- */
 export interface IAlert extends Document {
-    id: number; // Auto-increment numeric ID
+    id: number;
     tenantId: number;
     time: Date;
-    ruleName: string; // e.g., "Failed Login Burst"
+    ruleName: string;
     ip?: string;
     user?: string;
-    involved_ips?: string[]; // For distributed attacks
-    count: number; // Number of events that triggered this alert
+    involved_ips?: string[];
+    count: number;
     status: 'OPEN' | 'INVESTIGATING' | 'RESOLVED';
-    last_event_time: Date; // Timestamp of most recent triggering event
-    resolved_at?: Date; // When alert was resolved
+    last_event_time: Date;
+    resolved_at?: Date;
 }
 
-/**
- * Alert schema
- */
 const alertSchema = new Schema<IAlert>(
     {
         id: { type: Number, unique: true },
@@ -42,10 +36,8 @@ const alertSchema = new Schema<IAlert>(
     { timestamps: true }
 );
 
-// Compound index for dashboard queries
 alertSchema.index({ tenantId: 1, time: -1 });
 
-// Auto-increment id before saving
 alertSchema.pre('save', async function (next) {
     if (this.isNew) {
         this.id = await getNextSequence('alert');

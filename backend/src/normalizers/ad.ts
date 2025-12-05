@@ -1,22 +1,6 @@
 import { CentralLog } from '../types/CentralLog';
 import { parseTimestamp, resolveTenantId } from './base';
 
-/**
- * Normalize Active Directory / Windows Security logs
- * 
- * Example input:
- * {
- *   "tenant": "demoA",
- *   "source": "ad",
- *   "event_id": 4625,
- *   "event_type": "LogonFailed",
- *   "user": "demo\\eve",
- *   "host": "DC01",
- *   "ip": "203.0.113.77",
- *   "logon_type": 3,
- *   "@timestamp": "2025-08-20T11:11:11Z"
- * }
- */
 export async function normalizeAdLog(raw: any): Promise<CentralLog> {
     const eventId = raw.event_id || raw.EventID;
     const eventType = raw.event_type || mapEventIdToType(eventId);
@@ -31,32 +15,25 @@ export async function normalizeAdLog(raw: any): Promise<CentralLog> {
         event_type: eventType,
         event_subtype: eventId ? `EventID:${eventId}` : undefined,
 
-        // User and host
         user: raw.user || raw.TargetUserName || raw.SubjectUserName,
         host: raw.host || raw.Computer || raw.Workstation,
         src_ip: raw.ip || raw.IpAddress || raw.src_ip,
 
-        // Action and severity
         action: mapAdEventToAction(eventType, eventId),
         severity: calculateAdSeverity(eventId),
 
-        // Additional metadata in tags
         tags: [
             raw.logon_type ? `logon_type:${raw.logon_type}` : '',
             raw.LogonType ? `logon_type:${raw.LogonType}` : '',
             eventId ? `event_id:${eventId}` : ''
         ].filter(Boolean),
 
-        // Store original
         raw: raw
     };
 
     return normalized;
 }
 
-/**
- * Map common Windows Event IDs to event types
- */
 function mapEventIdToType(eventId?: number): string {
     if (!eventId) return 'unknown';
 
@@ -78,9 +55,6 @@ function mapEventIdToType(eventId?: number): string {
     return eventMap[eventId] || `EventID_${eventId}`;
 }
 
-/**
- * Map AD events to standard actions
- */
 function mapAdEventToAction(eventType: string, eventId?: number): string | undefined {
     const typeLower = eventType.toLowerCase();
 
@@ -90,7 +64,6 @@ function mapAdEventToAction(eventType: string, eventId?: number): string | undef
     if (typeLower.includes('deleted')) return 'delete';
     if (typeLower.includes('failed')) return 'deny';
 
-    // By Event ID
     if (eventId === 4624) return 'login';
     if (eventId === 4625) return 'deny';
     if (eventId === 4634) return 'logout';
@@ -98,23 +71,18 @@ function mapAdEventToAction(eventType: string, eventId?: number): string | undef
     return undefined;
 }
 
-/**
- * Calculate severity for AD events
- */
 function calculateAdSeverity(eventId?: number): number {
     if (!eventId) return 5;
 
-    // High severity events
-    const highSeverityEvents = [4625, 4740, 4720, 4726]; // Failed logon, lockout, user created/deleted
+    const highSeverityEvents = [4625, 4740, 4720, 4726];
     if (highSeverityEvents.includes(eventId)) {
         return 7;
     }
 
-    // Medium severity
-    const mediumSeverityEvents = [4624, 4728, 4732]; // Successful logon, group changes
+    const mediumSeverityEvents = [4624, 4728, 4732];
     if (mediumSeverityEvents.includes(eventId)) {
         return 5;
     }
 
-    return 3; // Low severity for informational events
+    return 3;
 }

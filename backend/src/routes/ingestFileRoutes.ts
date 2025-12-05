@@ -7,15 +7,13 @@ import * as alertService from '../services/alertService';
 
 const router = express.Router();
 
-// Configure multer to store files in memory
 const storage = multer.memoryStorage();
 const upload = multer({
     storage,
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10 MB limit
+        fileSize: 10 * 1024 * 1024,
     },
     fileFilter: (req, file, cb) => {
-        // Accept both JSON and CSV files
         const allowedMimeTypes = ['application/json', 'text/csv', 'application/csv'];
         const allowedExtensions = ['.json', '.csv'];
 
@@ -32,16 +30,13 @@ const upload = multer({
     },
 });
 
-/**
- * Parse CSV file and convert to array of objects
- */
 function parseCsvFile(fileContent: string): any[] {
     try {
         const records = parse(fileContent, {
-            columns: true,          // Use first row as headers
-            skip_empty_lines: true, // Skip empty lines
-            trim: true,             // Trim whitespace
-            cast: true,             // Auto-cast values (numbers, booleans)
+            columns: true,
+            skip_empty_lines: true,
+            trim: true,
+            cast: true,
         });
 
         return records;
@@ -50,21 +45,8 @@ function parseCsvFile(fileContent: string): any[] {
     }
 }
 
-/**
- * POST /api/ingest/file
- * Upload and ingest a JSON or CSV file containing logs
- * 
- * Supported formats:
- * - JSON: Array of log objects
- * - CSV: Headers in first row, one log per row
- * 
- * Supports all log sources: api, firewall, network, crowdstrike, aws, m365, ad
- */
 router.post('/file', upload.single('file'), async (req: Request, res: Response) => {
     try {
-        // ==================================
-        // STEP 1: Validate file upload
-        // ==================================
         if (!req.file) {
             res.status(400).json({
                 success: false,
@@ -78,15 +60,11 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
         const isJson = fileExtension === 'json';
         const isCsv = fileExtension === 'csv';
 
-        // ==================================
-        // STEP 2: Parse file based on type
-        // ==================================
         let logs: any[];
         const fileContent = req.file.buffer.toString('utf-8');
 
         try {
             if (isJson) {
-                // Parse JSON
                 logs = JSON.parse(fileContent);
 
                 if (!Array.isArray(logs)) {
@@ -98,7 +76,6 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
                     return;
                 }
             } else if (isCsv) {
-                // Parse CSV
                 logs = parseCsvFile(fileContent);
                 console.log(` Parsed ${logs.length} rows from CSV file`);
             } else {
@@ -118,9 +95,6 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
             return;
         }
 
-        // ==================================
-        // STEP 3: Validate array is not empty
-        // ==================================
         if (logs.length === 0) {
             res.status(400).json({
                 success: false,
@@ -130,9 +104,6 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
             return;
         }
 
-        // ==================================
-        // STEP 4: Normalize and insert logs
-        // ==================================
         const results = {
             total: logs.length,
             success: 0,
@@ -144,12 +115,10 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
 
         console.log(` Processing ${logs.length} logs from ${fileExtension?.toUpperCase()} file...`);
 
-        // Process each log through the unified normalizer
         for (let i = 0; i < logs.length; i++) {
             const rawLog = logs[i];
 
             try {
-                // Use unified normalization pipeline
                 const normalized = await normalizeLog(rawLog);
                 normalizedLogs.push(normalized);
                 results.success++;
@@ -157,24 +126,18 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
                 results.failed++;
                 results.errors.push({
                     index: i,
-                    row: i + 1, // 1-indexed for user
+                    row: i + 1,
                     error: error.message,
                     log: rawLog
                 });
                 console.error(` Failed to normalize log at row ${i + 1}:`, error.message);
-                // Continue processing other logs
             }
         }
 
-        // ==================================
-        // STEP 5: Generate IDs and bulk insert to database
-        // ==================================
         let insertedDocs: any[] = [];
 
         if (normalizedLogs.length > 0) {
             try {
-                // IMPORTANT: insertMany() doesn't trigger pre-save hooks
-                // So we need to manually generate IDs before insertion
                 const { getNextSequence } = await import('../models/Counter');
 
                 for (const log of normalizedLogs) {
@@ -195,9 +158,6 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
             }
         }
 
-        // ==================================
-        // STEP 6: Process alerts
-        // ==================================
         console.log(` Processing ${insertedDocs.length} events for alert detection...`);
 
         for (const doc of insertedDocs) {
@@ -205,14 +165,10 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
                 await alertService.processEvent(doc);
             } catch (error: any) {
                 console.error('Alert processing error:', error.message);
-                // Don't fail the whole batch if alert processing fails
             }
         }
 
-        // ==================================
-        // STEP 7: Return response
-        // ==================================
-        const statusCode = results.failed === 0 ? 201 : 207; // 207 = Multi-Status
+        const statusCode = results.failed === 0 ? 201 : 207;
 
         res.status(statusCode).json({
             success: results.failed === 0,
@@ -224,7 +180,7 @@ router.post('/file', upload.single('file'), async (req: Request, res: Response) 
                 total: results.total,
                 inserted: results.success,
                 failed: results.failed,
-                errors: results.errors.length > 0 ? results.errors.slice(0, 10) : undefined // Limit errors in response
+                errors: results.errors.length > 0 ? results.errors.slice(0, 10) : undefined
             }
         });
 
