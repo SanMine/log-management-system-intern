@@ -1,0 +1,703 @@
+{
+    "info": {
+        "_postman_id": "log-management-api-v2",
+        "name": "Log Management System API",
+        "description": "Complete API collection for Log Management System with RBAC.\\n\\n**Getting Started:**\\n1. Set your environment variables (host, token)\\n2. Start with Authentication folder to get a JWT token\\n3. Use the token for protected endpoints\\n\\n**Variables:**\\n- baseUrl: http://localhost:5004/api\\n- token: Your JWT token (auto-set after login)\\n- tenantId: Your tenant ID",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5004/api",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "tenantId",
+            "value": "1",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "1. Authentication",
+            "description": "User authentication endpoints - Start here!",
+            "item": [
+                {
+                    "name": "Signup (Create Viewer Account)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.environment.set('token', response.token);",
+                                    "    console.log('Account created! Token saved.');",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\\n  \\"email\\": \\"viewer@example.com\\",\\n  \\"password\\": \\"password123\\",\\n  \\"tenantName\\": \\"Example Corp\\"\\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/signup",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "signup"
+                            ]
+                        },
+                        "description": "Create a new viewer account. Auto-creates a tenant if it doesn't exist.\\n\\n**Fields:**\\n- email: User email address\\n- password: User password (min 6 chars)\\n- tenantName: Organization name"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login (Get Token)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    const response = pm.response.json();",
+                                    "    pm.environment.set('token', response.token);",
+                                    "    pm.environment.set('tenantId', response.user.tenantId || 'all');",
+                                    "    console.log('Logged in as:', response.user.email);",
+                                    "    console.log('Role:', response.user.role);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\\n  \\"email\\": \\"superadmin@gmail.com\\",\\n  \\"password\\": \\"super12345\\"\\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login to get JWT token. Token is auto-saved to environment.\\n\\n**Super Admin Credentials:**\\n- Email: superadmin@gmail.com\\n- Password: super12345\\n\\n**Or use your viewer account created via signup.**"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/me",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        },
+                        "description": "Get currently logged-in user info.\\n\\n**Requires:** JWT token in Authorization header"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/logout",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "logout"
+                            ]
+                        },
+                        "description": "Logout (optional - token expires in 7 days anyway)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "2. Log Ingestion",
+            "description": "Ways to send logs to the system",
+            "item": [
+                {
+                    "name": "Ingest Single Log (HTTP)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\\n  \\"tenant\\": \\"Lumiq-thailand.com\\",\\n  \\"source\\": \\"api\\",\\n  \\"event_type\\": \\"login_success\\",\\n  \\"user\\": \\"alice\\",\\n  \\"ip\\": \\"192.168.1.100\\",\\n  \\"url\\": \\"/api/login\\",\\n  \\"method\\": \\"POST\\",\\n  \\"status_code\\": 200,\\n  \\"timestamp\\": \\"2025-12-03T09: 15: 30Z\\"\\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/ingest/http",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "ingest",
+                                "http"
+                            ]
+                        },
+                        "description": "Ingest a single log event via HTTP POST.\\n\\n**Required Fields:**\\n- tenant: Organization name\\n- source: Log source (api, firewall, network, crowdstrike, aws, m365, ad)\\n- user: Username (not email)\\n\\n**Optional Fields:**\\n- event_type, ip, timestamp, etc."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Ingest Multiple Logs (Lumiq)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "[\\n  {\\n    \\"tenant\\": \\"Lumiq-thailand.com\\",\\n    \\"source\\": \\"api\\",\\n    \\"event_type\\": \\"login_failed\\",\\n    \\"user\\": \\"bob\\",\\n    \\"ip\\": \\"192.168.1.101\\",\\n    \\"timestamp\\": \\"2025-12-04T10: 00: 00Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"Lumiq-thailand.com\\",\\n    \\"source\\": \\"api\\",\\n    \\"event_type\\": \\"login_failed\\",\\n    \\"user\\": \\"bob\\",\\n    \\"ip\\": \\"192.168.1.101\\",\\n    \\"timestamp\\": \\"2025-12-04T10: 01: 30Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"Lumiq-thailand.com\\",\\n    \\"source\\": \\"api\\",\\n    \\"event_type\\": \\"login_failed\\",\\n    \\"user\\": \\"bob\\",\\n    \\"ip\\": \\"192.168.1.101\\",\\n    \\"timestamp\\": \\"2025-12-04T10: 02: 45Z\\"\\n  }\\n]"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/ingest/batch",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "ingest",
+                                "batch"
+                            ]
+                        },
+                        "description": "Ingest multiple log events at once (array of logs).\\n\\n**Use this for:**\\n- Bulk log uploads\\n- Testing alert rules (e.g., 3 failed logins)\\n\\n**Max:** 100 logs per request recommended"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Ingest Multiple Logs (StandUP.com)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "[\\n  {\\n    \\"tenant\\": \\"StandUP.com\\",\\n    \\"source\\": \\"firewall\\",\\n    \\"event_type\\": \\"connection_blocked\\",\\n    \\"user\\": \\"john_smith\\",\\n    \\"ip\\": \\"203.45.67.89\\",\\n    \\"timestamp\\": \\"2025-12-03T14: 22: 15Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"StandUP.com\\",\\n    \\"source\\": \\"api\\",\\n    \\"event_type\\": \\"api_request\\",\\n    \\"user\\": \\"sarah_jones\\",\\n    \\"ip\\": \\"10.0.1.50\\",\\n    \\"timestamp\\": \\"2025-12-03T16: 45: 22Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"StandUP.com\\",\\n    \\"source\\": \\"network\\",\\n    \\"event_type\\": \\"port_scan_detected\\",\\n    \\"user\\": \\"mike_wilson\\",\\n    \\"ip\\": \\"192.168.5.100\\",\\n    \\"timestamp\\": \\"2025-12-04T08: 10: 33Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"StandUP.com\\",\\n    \\"source\\": \\"api\\",\\n    \\"event_type\\": \\"login_success\\",\\n    \\"user\\": \\"emily_davis\\",\\n    \\"ip\\": \\"172.16.0.45\\",\\n    \\"timestamp\\": \\"2025-12-04T11: 30: 48Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"StandUP.com\\",\\n    \\"source\\": \\"firewall\\",\\n    \\"event_type\\": \\"unauthorized_access\\",\\n    \\"user\\": \\"alex_chen\\",\\n    \\"ip\\": \\"198.51.100.25\\",\\n    \\"timestamp\\": \\"2025-12-04T15: 20: 12Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"StandUP.com\\",\\n    \\"source\\": \\"aws\\",\\n    \\"event_type\\": \\"s3_bucket_access\\",\\n    \\"user\\": \\"david_kumar\\",\\n    \\"ip\\": \\"52.200.15.90\\",\\n    \\"timestamp\\": \\"2025-12-05T09: 05: 27Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"StandUP.com\\",\\n    \\"source\\": \\"m365\\",\\n    \\"event_type\\": \\"file_downloaded\\",\\n    \\"user\\": \\"lisa_brown\\",\\n    \\"ip\\": \\"40.87.123.45\\",\\n    \\"timestamp\\": \\"2025-12-05T13: 42: 55Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"StandUP.com\\",\\n    \\"source\\": \\"ad\\",\\n    \\"event_type\\": \\"password_change\\",\\n    \\"user\\": \\"robert_taylor\\",\\n    \\"ip\\": \\"10.10.10.20\\",\\n    \\"timestamp\\": \\"2025-12-05T17: 18: 40Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"StandUP.com\\",\\n    \\"source\\": \\"api\\",\\n    \\"event_type\\": \\"data_export\\",\\n    \\"user\\": \\"jennifer_lee\\",\\n    \\"ip\\": \\"192.168.1.75\\",\\n    \\"timestamp\\": \\"2025-12-06T10: 55: 08Z\\"\\n  },\\n  {\\n    \\"tenant\\": \\"StandUP.com\\",\\n    \\"source\\": \\"crowdstrike\\",\\n    \\"event_type\\": \\"malware_detected\\",\\n    \\"user\\": \\"thomas_garcia\\",\\n    \\"ip\\": \\"172.20.0.33\\",\\n    \\"timestamp\\": \\"2025-12-06T14: 33: 21Z\\"\\n  }\\n]"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/ingest/batch",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "ingest",
+                                "batch"
+                            ]
+                        },
+                        "description": "Ingest 10 different events for StandUP.com tenant with various users and event types.\\n\\n**Tenant:** StandUP.com\\n**Date Range:** Dec 3-6, 2025\\n**Users:** 10 different usernames\\n**Sources:** Firewall, API, Network, AWS, M365, AD, CrowdStrike"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "3. Log Search",
+            "description": "Search and filter logs",
+            "item": [
+                {
+                    "name": "Search Logs",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/logs/search?tenant={{tenantId}}&from=2025-12-03T00:00:00Z&to=2025-12-06T23:59:59Z&q=login&page=1&limit=50",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "logs",
+                                "search"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenant",
+                                    "value": "{{tenantId}}",
+                                    "description": "Tenant ID or name"
+                                },
+                                {
+                                    "key": "from",
+                                    "value": "2025-12-03T00:00:00Z",
+                                    "description": "Start date (ISO format)"
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "2025-12-06T23:59:59Z",
+                                    "description": "End date (ISO format)"
+                                },
+                                {
+                                    "key": "q",
+                                    "value": "login",
+                                    "description": "Search query (optional)"
+                                },
+                                {
+                                    "key": "user",
+                                    "value": "alice",
+                                    "description": "Filter by user (optional)",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "description": "Page number"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "50",
+                                    "description": "Results per page (max 100)"
+                                }
+                            ]
+                        },
+                        "description": "Search logs with free-text query and filters.\\n\\n**Required:**\\n- tenant, from, to\\n\\n**Optional:**\\n- q: Search term (searches user, IP, event_type, etc.)\\n- user: Filter by specific user\\n- page, limit: Pagination\\n\\n**NOTE:** If you get empty results, make sure:
+\\n1. You've ingested logs first\\n2. Date range matches your log timestamps\\n3. Tenant ID/name is correct\\n\\n**Examples:**\\n- q=login_failed\\n- q=192.168.1.1\\n- q=alice"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "4. Dashboard",
+            "description": "Dashboard data and metrics",
+            "item": [
+                {
+                    "name": "Get Dashboard Data",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/dashboard?tenant={{tenantId}}&timeRange=24h",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "dashboard"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenant",
+                                    "value": "{{tenantId}}",
+                                    "description": "Tenant ID or 'all' for admin"
+                                },
+                                {
+                                    "key": "timeRange",
+                                    "value": "24h",
+                                    "description": "Time range: 15m, 1h, 24h, 7d"
+                                }
+                            ]
+                        },
+                        "description": "Get dashboard summary with metrics and charts.\\n\\n**RBAC:**\\n- Admin: Can use tenant=all to see all data\\n- Viewer: Locked to their tenant\\n\\n**Time Ranges:**\\n- 15m, 1h, 24h, 7d"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "5. Alerts",
+            "description": "View and manage security alerts",
+            "item": [
+                {
+                    "name": "Get All Alerts",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/alerts?tenant={{tenantId}}&status=all&timeRange=24h",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "alerts"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenant",
+                                    "value": "{{tenantId}}",
+                                    "description": "Tenant ID or 'all'"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "all",
+                                    "description": "Filter: all, OPEN, INVESTIGATING, RESOLVED"
+                                },
+                                {
+                                    "key": "timeRange",
+                                    "value": "24h",
+                                    "description": "15m, 1h, 24h, 7d"
+                                }
+                            ]
+                        },
+                        "description": "Get all alerts with optional filters.\\n\\n**Filters:**\\n- status: OPEN, INVESTIGATING, RESOLVED, all\\n- timeRange: 15m, 1h, 24h, 7d\\n\\n**RBAC:**\\n- Admin: Read-only access to all alerts\\n- Viewer: Full access to tenant alerts"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Alert Status (Viewer Only)",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\\n  \\"status\\": \\"INVESTIGATING\\"\\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/alerts/1",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "alerts",
+                                "1"
+                            ]
+                        },
+                        "description": "Update alert status. **Only VIEWER accounts can update alerts.**\\n\\n**Status Options:**\\n- OPEN\\n- INVESTIGATING\\n- RESOLVED\\n\\n**RBAC:**\\n- Admin: Read-only\\n- Viewer: Can update"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "6. User Activity",
+            "description": "Track user activity and events",
+            "item": [
+                {
+                    "name": "Get Users List",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users?tenant={{tenantId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenant",
+                                    "value": "{{tenantId}}"
+                                }
+                            ]
+                        },
+                        "description": "Get list of usernames from logs for a tenant.\\n\\n**Returns:** Array of unique usernames"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get User Activity",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/alice/activity?tenant={{tenantId}}&timeRange=24h",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "alice",
+                                "activity"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenant",
+                                    "value": "{{tenantId}}"
+                                },
+                                {
+                                    "key": "timeRange",
+                                    "value": "24h"
+                                }
+                            ]
+                        },
+                        "description": "Get detailed activity for a specific user.\\n\\n**Returns:**\\n- Summary stats (total events, unique IPs, alerts)\\n- Events over time (for charts)\\n- Recent events\\n- Related alerts\\n\\n**Use 'all' as username to see all users**"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get All Events",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/users/all/activity?tenant={{tenantId}}&timeRange=7d",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                "all",
+                                "activity"
+                            ],
+                            "query": [
+                                {
+                                    "key": "tenant",
+                                    "value": "{{tenantId}}"
+                                },
+                                {
+                                    "key": "timeRange",
+                                    "value": "7d"
+                                }
+                            ]
+                        },
+                        "description": "Get all events data across all users for a tenant.\\n\\n**Returns:**\\n- All events with full details\\n- Summary statistics\\n- Events timeline\\n- All related alerts\\n\\n**Time Ranges:** 15m, 1h, 24h, 7d"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "7. Tenants",
+            "description": "Manage tenants (organizations)",
+            "item": [
+                {
+                    "name": "Get All Tenants",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/tenants",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "tenants"
+                            ]
+                        },
+                        "description": "Get list of all tenants.\\n\\n**RBAC:**\\n- Admin: Sees all tenants\\n- Viewer: Sees only their tenant"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Tenant (Admin Only)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\\n  \\"name\\": \\"New Company Inc\\",\\n  \\"key\\": \\"NEWCOMPANY\\"\\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/tenants",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "tenants"
+                            ]
+                        },
+                        "description": "Create a new tenant. **Admin only.**\\n\\n**Fields:**\\n- name: Tenant display name\\n- key: Unique identifier (uppercase, no spaces)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Tenant by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/tenants/{{tenantId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "tenants",
+                                "{{tenantId}}"
+                            ]
+                        },
+                        "description": "Get details for a specific tenant by ID."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "8. Examples",
+            "description": "Common use case examples",
+            "item": [
+                {
+                    "name": "Example: Create Failed Login Alert",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "[\\n  {\\"tenant\\": \\"test.com\\", \\"source\\": \\"api\\", \\"event_type\\": \\"login_failed\\", \\"user\\": \\"testuser\\", \\"ip\\": \\"192.168.1.100\\", \\"timestamp\\": \\"2025-12-05T10: 00: 00Z\\"},\\n  {\\"tenant\\": \\"test.com\\", \\"source\\": \\"api\\", \\"event_type\\": \\"login_failed\\", \\"user\\": \\"testuser\\", \\"ip\\": \\"192.168.1.100\\", \\"timestamp\\": \\"2025-12-05T10: 01: 00Z\\"},\\n  {\\"tenant\\": \\"test.com\\", \\"source\\": \\"api\\", \\"event_type\\": \\"login_failed\\", \\"user\\": \\"testuser\\", \\"ip\\": \\"192.168.1.100\\", \\"timestamp\\": \\"2025-12-05T10: 02: 00Z\\"}\\n]"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/ingest/batch",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "ingest",
+                                "batch"
+                            ]
+                        },
+                        "description": "Send 3 failed login attempts to trigger an alert.\\n\\n**Rule:** Multiple Failed Login Attempts\\n**Threshold:** ≥3 failed logins from same IP within 5 minutes\\n**Result:** Alert created with status OPEN"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Example: Auto-Resolve Alert",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\\n  \\"tenant\\": \\"test.com\\",\\n  \\"source\\": \\"api\\",\\n  \\"event_type\\": \\"login_success\\",\\n  \\"user\\": \\"testuser\\",\\n  \\"ip\\": \\"192.168.1.100\\",\\n  \\"timestamp\\": \\"2025-12-05T10: 05: 00Z\\"\\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/ingest/http",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "ingest",
+                                "http"
+                            ]
+                        },
+                        "description": "Send a successful login for the same user.\\n\\n**Result:** Any OPEN or INVESTIGATING alerts for this user will auto-resolve to RESOLVED status."
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{token}}",
+                "type": "string"
+            }
+        ]
+    }
+}

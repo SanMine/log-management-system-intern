@@ -78,19 +78,32 @@ export async function createAlert(data: Partial<IAlert>): Promise<IAlert> {
 
 
 export async function checkMultipleFailedLogins(event: ILogEvent): Promise<void> {
-    if (event.event_type !== 'login_failed') return;
+    console.log(`[Alert Check] Processing event - Type: ${event.event_type}, User: ${event.user}, IP: ${event.src_ip}, Tenant: ${event.tenantId}`);
 
-    if (!event.user || !event.src_ip) return;
+    if (event.event_type !== 'login_failed') {
+        console.log(`[Alert Check] Skipping - event_type is "${event.event_type}", not "login_failed"`);
+        return;
+    }
+
+    if (!event.user || !event.src_ip) {
+        console.log(`[Alert Check] Missing required fields - user: ${event.user ? 'YES' : 'NO'}, src_ip: ${event.src_ip ? 'YES' : 'NO'}`);
+        return;
+    }
 
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-
-    const count = await LogEvent.countDocuments({
+    const query = {
         tenantId: event.tenantId,
         user: event.user,
         src_ip: event.src_ip,
         event_type: 'login_failed',
         timestamp: { $gte: fiveMinutesAgo },
-    });
+    };
+
+    console.log(`[Alert Check] Querying failed logins - Tenant: ${event.tenantId}, User: ${event.user}, IP: ${event.src_ip}, Since: ${fiveMinutesAgo.toISOString()}`);
+
+    const count = await LogEvent.countDocuments(query);
+
+    console.log(`[Alert Check] Found ${count} failed login(s) in last 5 minutes for ${event.user}@${event.src_ip}`);
 
     if (count >= 3) {
         const ruleName = 'Multiple Failed Login Attempts';
@@ -107,7 +120,7 @@ export async function checkMultipleFailedLogins(event: ILogEvent): Promise<void>
             existingAlert.count = count;
             existingAlert.last_event_time = event.timestamp;
             await existingAlert.save();
-            console.log(` Updated alert for ${event.user} from ${event.src_ip}: ${count} attempts`);
+            console.log(`[Alert] Updated alert for ${event.user} from ${event.src_ip}: ${count} attempts`);
         } else {
             await createAlert({
                 tenantId: event.tenantId,
@@ -119,8 +132,10 @@ export async function checkMultipleFailedLogins(event: ILogEvent): Promise<void>
                 status: 'OPEN',
                 last_event_time: event.timestamp,
             });
-            console.log(` NEW ALERT: ${ruleName} - ${event.user} from ${event.src_ip} (${count} attempts)`);
+            console.log(`[Alert] NEW ALERT: ${ruleName} - ${event.user} from ${event.src_ip} (${count} attempts)`);
         }
+    } else {
+        console.log(`[Alert Check] Count ${count} < 3, no alert triggered yet`);
     }
 }
 
