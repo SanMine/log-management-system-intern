@@ -1,444 +1,316 @@
-# SaaS Deployment Guide (Cloud)
+# SaaS Deployment Guide
 
-This guide helps you deploy **Nexlog** to the cloud using free services.
+This document explains how to deploy Nexlog in SaaS mode using:
 
-**Deployment Stack:**
-- **Backend:** Render.com (free tier)
-- **Frontend:** Vercel.com (free tier)
-- **Database:** MongoDB Atlas (free tier)
-
-**Time needed:** 20-30 minutes
-
----
-
-## Prerequisites
-
-Before starting, create free accounts at:
-1. [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register)
-2. [Render.com](https://render.com/)
-3. [Vercel.com](https://vercel.com/signup)
-4. [GitHub.com](https://github.com/) (to store your code)
+- **Backend:** Node.js + Express + MongoDB (Render)
+- **Frontend:** React (Vercel)
+- **Database:** MongoDB Atlas (Cloud)
+- **Authentication:** JWT
+- **Multi-Tenant:** Enabled automatically on signup
 
 ---
 
-## Step 1: Push Your Code to GitHub
+## 1. Prerequisites
 
-```bash
-# Go to your project folder
-cd log-management-system-intern
+- Node.js 18+
+- MongoDB Atlas account (free tier)
+- GitHub account
+- Render account (free tier)
+- Vercel account (free tier)
 
-# Initialize git (if not already done)
-git init
-git add .
-git commit -m "Initial commit"
+---
 
-# Create new repository on GitHub.com
-# Then connect and push:
-git remote add origin https://github.com/YOUR-USERNAME/log-management.git
-git branch -M main
-git push -u origin main
+## 2. Environment Variables
+
+### Backend (.env)
+
+```
+PORT=5004
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/nexlog
+JWT_SECRET=your-random-secret-key-here
+FRONTEND_URL=https://your-frontend.vercel.app
+NODE_ENV=production
+```
+
+### Frontend (.env)
+
+```
+VITE_API_BASE_URL=https://your-backend.onrender.com/api
 ```
 
 ---
 
-## Step 2: Setup MongoDB Atlas (Database)
+## 3. Setup MongoDB Atlas (Database)
 
-### 2.1 Create Database Cluster
-
-1. Go to [MongoDB Atlas](https://cloud.mongodb.com/)
-2. Click **"Build a Database"**
-3. Choose **FREE tier** (M0 Shared)
-4. Select **Cloud Provider:** AWS
-5. Select **Region:** Closest to you (e.g., Singapore, Oregon)
-6. Cluster Name: `nexlog-cluster`
-7. Click **"Create"**
-
-### 2.2 Create Database User
-
-1. Go to **Database Access** (left sidebar)
-2. Click **"Add New Database User"**
-3. Authentication: **Password**
-4. Username: `logadmin`
-5. Password: **Auto-generate** (copy it somewhere safe!)
-6. Database User Privileges: **Atlas Admin**
-7. Click **"Add User"**
-
-### 2.3 Whitelist IP Addresses
-
-1. Go to **Network Access** (left sidebar)
-2. Click **"Add IP Address"**
-3. Click **"Allow Access from Anywhere"** (for Render.com)
-4. Confirm: `0.0.0.0/0` appears
-5. Click **"Confirm"**
-
-### 2.4 Get Connection String
-
-1. Go to **Database** (left sidebar)
-2. Click **"Connect"** button on your cluster
-3. Choose **"Connect your application"**
-4. Driver: **Node.js**
-5. Copy the connection string, it looks like:
-   ```
-   mongodb+srv://logadmin:<password>@log-management-cluster.xxxxx.mongodb.net/?retryWrites=true&w=majority
-   ```
+1. Go to https://cloud.mongodb.com
+2. Create new cluster (FREE M0 tier)
+3. Create database user with password
+4. Whitelist all IP addresses: `0.0.0.0/0`
+5. Get connection string
 6. Replace `<password>` with your actual password
-7. Add database name at the end: `/logdb`
-   ```
-   mongodb+srv://logadmin:YOUR_PASSWORD@log-management-cluster.xxxxx.mongodb.net/logdb?retryWrites=true&w=majority
-   ```
-8. **Save this string!** You'll need it for Render.
+7. Add `/nexlog` at the end
+
+Example:
+```
+mongodb+srv://admin:mypass123@cluster0.xxxxx.mongodb.net/nexlog
+```
 
 ---
 
-## Step 3: Deploy Backend to Render
+## 4. Deploy Backend (Render)
 
-### 3.1 Create Web Service
+1. Push code to GitHub
+2. Go to https://render.com
+3. Click "New" and choose "Web Service"
+4. Connect your GitHub repo
+5. Configure:
+   - **Name:** nexlog-backend
+   - **Root Directory:** backend
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm run dev`
+   - **Instance Type:** Free
+6. Add environment variables from step 2
+7. Click "Create Web Service"
+8. Wait 3-5 minutes
 
-1. Go to [Render Dashboard](https://dashboard.render.com/)
-2. Click **"New +"** → **"Web Service"**
-3. Connect your **GitHub account**
-4. Select your repository: `log-management`
-5. Click **"Connect"**
+Your backend URL:
+```
+https://nexlog-backend.onrender.com
+```
 
-### 3.2 Configure Service
+### Seed Super Admin
 
-**Basic Settings:**
-- Name: `nexlog-backend`
-- Region: Same as MongoDB (e.g., Oregon, Singapore)
-- Branch: `main`
-- Root Directory: `backend`
-- Runtime: **Node**
-- Build Command: `npm install && npm run build`
-- Start Command: `npm start`
-- Instance Type: **Free**
-
-### 3.3 Add Environment Variables
-
-Click **"Advanced"** → **"Add Environment Variable"**
-
-Add these variables:
-
-| Key | Value |
-|-----|-------|
-| `NODE_ENV` | `production` |
-| `PORT` | `5004` |
-| `MONGO_URI` | Your MongoDB connection string from Step 2.4 |
-| `JWT_SECRET` | Any random string (e.g., `super-secret-jwt-key-production-2024`) |
-| `FRONTEND_URL` | `https://log-management.vercel.app` (update after Step 4) |
-
-> **Important:** Generate a strong JWT_SECRET using:
-> ```bash
-> node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-> ```
-
-### 3.4 Deploy
-
-1. Click **"Create Web Service"**
-2. Wait 3-5 minutes for deployment
-3. Your backend URL will be: `https://nexlog-backend.onrender.com`
-4. **Copy this URL!** You'll need it for frontend.
-
-### 3.5 Seed Super Admin Account
-
-After deployment succeeds:
-
-1. Go to your service in Render
-2. Click **"Shell"** tab (left sidebar)
-3. Run this command:
-   ```bash
+After deployment:
+1. Go to backend service in Render
+2. Click "Shell" tab
+3. Run:
+   ```
    npm run seed:admin
    ```
-4. You should see: `Super admin seeded successfully`
 
-**Super Admin Credentials:**
+Super Admin credentials:
 - Email: `superadmin@gmail.com`
 - Password: `super12345`
 
 ---
 
-## Step 4: Deploy Frontend to Vercel
+## 5. Deploy Frontend (Vercel)
 
-### 4.1 Import Project
+1. Push code to GitHub
+2. Go to https://vercel.com
+3. Click "New Project"
+4. Import your GitHub repo
+5. Configure:
+   - **Framework:** Vite
+   - **Root Directory:** frontend
+   - **Build Command:** `npm run build`
+   - **Output Directory:** dist
+6. Add environment variable:
+   ```
+   VITE_API_BASE_URL=https://nexlog-backend.onrender.com/api
+   ```
+7. Click "Deploy"
+8. Wait 2-3 minutes
 
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Click **"Add New..."** → **"Project"**
-3. Import your GitHub repository: `log-management`
-4. Click **"Import"**
+Your frontend URL:
+```
+https://nexlog.vercel.app
+```
 
-### 4.2 Configure Project
+### Update Backend CORS
 
-**Framework Preset:** Vite (should auto-detect)
-
-**Root Directory:**
-- Click **"Edit"**
-- Set to: `frontend`
-
-**Build Settings:**
-- Build Command: `npm run build`
-- Output Directory: `dist`
-- Install Command: `npm install`
-
-### 4.3 Add Environment Variables
-
-Click **"Environment Variables"**
-
-Add this variable:
-
-| Key | Value |
-|-----|-------|
-| `VITE_API_BASE_URL` | `https://log-management-backend.onrender.com/api` |
-
-(Use your actual Render backend URL from Step 3.4)
-
-### 4.4 Deploy
-
-1. Click **"Deploy"**
-2. Wait 2-3 minutes
-3. Your frontend URL will be: `https://log-management-XXXX.vercel.app`
-4. Click **"Visit"** to open your app!
-
-### 4.5 Update Backend FRONTEND_URL
-
-1. Go back to Render dashboard
-2. Open your backend service
-3. Go to **"Environment"** tab
-4. Update `FRONTEND_URL` to your Vercel URL
-5. Click **"Save Changes"**
-6. Service will auto-redeploy
+1. Go back to Render backend
+2. Update `FRONTEND_URL` environment variable
+3. Set to your Vercel URL
+4. Service will auto-redeploy
 
 ---
 
-## Step 5: Verify Deployment
+## 6. SaaS Mode (Multi-Tenant)
 
-### 5.1 Test Frontend
+The system automatically handles multi-tenancy:
 
-1. Open your Vercel URL
-2. You should see the login page
-3. Login with Super Admin:
-   - Email: `superadmin@gmail.com`
-   - Password: `super12345`
-4. You should see the dashboard
-
-### 5.2 Test Signup
-
-1. Click **"Sign up"**
-2. Create a new viewer account:
-   - Email: `test@demo.com`
-   - Password: `test1234`
-   - Organization: `Demo Company`
-3. Should redirect to dashboard
-
-### 5.3 Test Log Ingestion
-
-Using Postman or curl:
-
+**Signup creates new tenant:**
 ```bash
-curl -X POST https://log-management-backend.onrender.com/api/ingest/http \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tenant": "demo",
-    "source": "api",
-    "event_type": "login_success",
-    "user": "test@demo.com",
-    "ip": "192.168.1.100",
-    "timestamp": "2024-12-05T10:30:00Z"
-  }'
-```
+POST /api/auth/signup
+Content-Type: application/json
 
-Expected response:
-```json
 {
-  "success": true,
-  "id": 1,
-  "source": "api",
-  "message": "Log event ingested successfully"
+  "email": "user@company.com",
+  "password": "password123",
+  "tenantName": "Company Name"
 }
 ```
 
-### 5.4 Test Search
+**Response includes:**
+- JWT token (contains `tenantId`)
+- User role (`viewer` or `super_admin`)
+- Tenant information
 
-1. Go to **User Activity** page
-2. Enter search term: `test@demo.com`
-3. You should see the log you just created
-
----
-
-## Step 6: Enable HTTPS (Automatic)
-
-✅ **Already Enabled!**
-
-Both Render and Vercel automatically provide free HTTPS:
-- Frontend: `https://log-management-XXXX.vercel.app`
-- Backend: `https://log-management-backend.onrender.com`
-
-SSL certificates are auto-generated and auto-renewed.
+**Data isolation:**
+- Each tenant only sees their own logs
+- Super admin can view all tenants
+- Enforced at database query level
 
 ---
 
-## Monitoring & Logs
+## 7. Log Ingestion Endpoints
 
-### View Backend Logs (Render)
+External systems can send logs to your SaaS:
 
-1. Go to Render dashboard
-2. Click your service
-3. Click **"Logs"** tab
-4. See real-time server logs
-
-### View Frontend Logs (Vercel)
-
-1. Go to Vercel dashboard
-2. Click your project
-3. Click **"Deployments"** → Select latest
-4. Click **"Runtime Logs"**
-
-### MongoDB Logs (Atlas)
-
-1. Go to MongoDB Atlas
-2. Click **"Metrics"** tab
-3. See query performance and storage usage
-
----
-
-## Performance Tips
-
-### Render Free Tier Limitations
-
-⚠️ **Important:** Free tier services sleep after 15 minutes of inactivity
-- **Impact:** First request after sleep takes 30-60 seconds
-- **Solution:** Upgrade to paid tier ($7/month) for 24/7 uptime
-
-### Keep Service Awake (Optional)
-
-Use a free ping service like [UptimeRobot](https://uptimerobot.com/):
-1. Create account
-2. Add monitor for your backend URL
-3. Ping every 10 minutes
-4. Keeps service from sleeping
-
----
-
-## Updating Your Deployment
-
-### Update Backend
-
+**Single log:**
 ```bash
-# Make changes to code
-git add .
-git commit -m "Update backend"
-git push origin main
+POST /api/ingest/http
+Content-Type: application/json
 
-# Render auto-deploys in 2-3 minutes
+{
+  "tenant": "company.com",
+  "source": "api",
+  "event_type": "login_failed",
+  "user": "alice",
+  "ip": "192.168.1.100"
+}
 ```
 
-### Update Frontend
-
+**Batch logs:**
 ```bash
-# Make changes to code
-git add .
-git commit -m "Update frontend"
-git push origin main
+POST /api/ingest/batch
+Content-Type: application/json
 
-# Vercel auto-deploys in 1-2 minutes
+[
+  { "tenant": "company.com", "source": "api", ... },
+  { "tenant": "company.com", "source": "firewall", ... }
+]
 ```
 
----
 
-## Troubleshooting
+## 8. Verify Deployment
 
-### Problem: Backend shows "Application failed to respond"
+Test these endpoints in order:
 
-**Solution:**
-1. Check Render logs for errors
-2. Verify `MONGO_URI` is correct
-3. Verify MongoDB Atlas IP whitelist includes `0.0.0.0/0`
-
-### Problem: Frontend shows CORS errors
-
-**Solution:**
-1. Check `FRONTEND_URL` in Render matches your Vercel URL exactly
-2. Must include `https://` and no trailing slash
-3. Redeploy backend after changing
-
-### Problem: Login doesn't work
-
-**Solution:**
-1. Check browser console for errors
-2. Verify `VITE_API_BASE_URL` in Vercel is correct
-3. Try running seed script again in Render shell
-
-### Problem: "Cannot connect to MongoDB"
-
-**Solution:**
-1. Verify MongoDB Atlas cluster is running
-2. Check connection string has correct password
-3. Verify database name is added: `/logdb`
-4. Check network access allows `0.0.0.0/0`
-
----
-
-## Cost Summary
-
-| Service | Free Tier Limits | Cost |
-|---------|-----------------|------|
-| **MongoDB Atlas** | 512 MB storage | $0 |
-| **Render** | 750 hours/month, sleeps after 15min | $0 |
-| **Vercel** | 100 GB bandwidth/month | $0 |
-| **Total** | Enough for testing/demo | **$0/month** |
-
-**To upgrade:**
-- MongoDB: $9/month for 2GB
-- Render: $7/month for always-on
-- Vercel: Free tier is usually enough
-
----
-
-## Security Checklist
-
-- [x] HTTPS enabled (automatic)
-- [x] Passwords hashed with bcrypt
-- [x] JWT tokens signed
-- [x] CORS configured
-- [x] MongoDB access restricted
-- [x] Environment variables secured
-- [ ] Change default super admin password
-- [ ] Rotate JWT_SECRET periodically
-- [ ] Enable MongoDB backup (paid feature)
-
----
-
-## Demo URLs for Examiner
-
-After deployment, provide these URLs:
-
-**Frontend (Public):**
+**1. Health check**
+```bash
+GET https://nexlog-backend.onrender.com/api/health
 ```
-https://log-management-XXXX.vercel.app
+Expected: `{"status":"ok"}`
+
+**2. Signup**
+```bash
+POST /api/auth/signup
+Body: { "email": "test@demo.com", "password": "test1234", "tenantName": "Demo Co" }
 ```
+Expected: Returns token
+
+**3. Login**
+```bash
+POST /api/auth/login
+Body: { "email": "superadmin@gmail.com", "password": "super12345" }
+```
+Expected: Returns token
+
+**4. Send log**
+```bash
+POST /api/ingest/http
+Body: { "tenant": "demo", "source": "api", "event_type": "test" }
+```
+Expected: `{"success":true, "id":1}`
+
+**5. Search logs**
+```bash
+GET /api/logs/search?tenant=1&from=2024-01-01
+Headers: Authorization: Bearer <token>
+```
+Expected: Returns logs array
+
+**6. Open frontend**
+```
+https://nexlog.vercel.app
+```
+Expected: See login page
+
+**7. Login to dashboard**
+- Use super admin credentials
+- Should see dashboard with data
+
+**Checklist:**
+- [ ] Backend responds to health check
+- [ ] Signup creates user
+- [ ] Login returns token
+- [ ] Ingest endpoint accepts logs
+- [ ] Search returns data
+- [ ] Frontend loads
+- [ ] Dashboard displays charts
+- [ ] Alerts page works
+
+If all checked, deployment is successful.
+
+---
+
+## 9. Production URLs
+
+Update these in your documentation:
 
 **Backend API:**
 ```
-https://log-management-backend.onrender.com
+https://nexlog-backend.onrender.com
 ```
 
-**Test Credentials:**
+**Frontend App:**
 ```
-Super Admin:
-  Email: superadmin@gmail.com
-  Password: super12345
+https://nexlog.vercel.app
+```
 
-Viewer (create via signup):
-  Email: demo@test.com
-  Password: demo1234
+**API Documentation:**
 ```
+https://nexlog-backend.onrender.com/api
+```
+
+Share these URLs with examiners for testing.
 
 ---
 
-## Next Steps
+## 10. Troubleshooting
 
-1. ✅ Test all features in production
-2. ✅ Upload sample logs via Postman
-3. ✅ Verify alerts are working
-4. ✅ Create demo video showing deployment
-5. ✅ Share URLs with examiner
+**Backend won't deploy**
+- Check build logs in Render
+- Verify `MONGO_URI` is correct
+- Check MongoDB Atlas allows `0.0.0.0/0`
 
-Your SaaS deployment is complete! 🎉
+**Frontend shows CORS error**
+- Verify `FRONTEND_URL` in Render matches Vercel URL exactly
+- Must include `https://`
+- No trailing slash
+
+**Cannot login**
+- Run seed script in Render Shell
+- Check MongoDB connection
+- Verify JWT_SECRET is set
+
+**Logs not appearing**
+- Check tenant ID in logs matches user's tenant
+- Verify database connection
+- Check backend logs in Render
+
+---
+
+## Summary
+
+**Deployment time:** 20-30 minutes
+
+**Steps:**
+1. Setup MongoDB Atlas (5 min)
+2. Deploy backend to Render (10 min)
+3. Deploy frontend to Vercel (5 min)
+4. Test endpoints (5 min)
+5. Share URLs
+
+**Cost:** $0 (all free tiers)
+
+**What you get:**
+- Public HTTPS backend API
+- Public HTTPS frontend app
+- Cloud MongoDB database
+- Auto-deploy from GitHub
+- SSL certificates included
+
+Your SaaS deployment is complete.

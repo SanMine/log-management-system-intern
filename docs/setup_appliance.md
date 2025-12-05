@@ -1,102 +1,101 @@
-# Local Setup Guide (Mac)
+# Local Setup Guide
 
-This guide shows you how to run **Nexlog** on your Mac computer.
-
-**Time needed:** 10 minutes
+This guide shows how to run Nexlog on your computer.
 
 ---
 
-## What You Need
+## Prerequisites
 
-- **Mac computer** (macOS)
-- **Node.js 18+** installed
-- **MongoDB** running
-- **Git** installed
+- Node.js 18+
+- MongoDB Atlas account (free)
+- Git
 
 ---
 
-## Step 1: Get the Code
-
-Open Terminal and run:
+## Step 1: Clone Repository
 
 ```bash
-# Clone the project
 git clone https://github.com/SanMine/log-management-system-intern.git
-
-# Go into the folder
 cd log-management-system-intern
 ```
 
 ---
 
-## Step 2: Setup Backend
+## Step 2: Setup MongoDB Atlas
+
+1. Go to https://cloud.mongodb.com
+2. Create free cluster
+3. Create database user
+4. Whitelist all IPs: `0.0.0.0/0` (for development)
+5. Get connection string
+6. Replace `<password>` with your password
+
+Example connection string:
+```
+mongodb+srv://admin:mypass123@cluster0.xxxxx.mongodb.net/nexlog
+```
+
+---
+
+## Step 3: Configure Backend
 
 ```bash
-# Go to backend folder
 cd backend
-
-# Install packages
 npm install
 
-# Create .env file
-cat > .env << EOF
-MONGO_URI=mongodb://localhost:27017/nexlog
-JWT_SECRET=your-secret-key-change-in-production
-PORT=5004
-FRONTEND_URL=http://localhost:5174
+Add .env file in backend folder
+MONGO_URI=mongodb+srv://your-connection-string-here/nexlog
+JWT_SECRET=your-secret-key
+PORT=5004 (can choose any port number)
+FRONTEND_URL=http://localhost:5174 
 NODE_ENV=development
-EOF
 
-# Create super admin account
+
 npm run seed:admin
-
-# Go back to main folder
 cd ..
 ```
 
-**Super Admin Login:**
+Super admin login:
 - Email: `superadmin@gmail.com`
 - Password: `super12345`
 
 ---
 
-## Step 3: Setup Frontend
+## Step 4: Configure Frontend
 
 ```bash
-# Go to frontend folder
 cd frontend
-
-# Install packages
 npm install
 
-# Create .env file
-cat > .env << EOF
-VITE_API_BASE_URL=http://localhost:5004/api
-EOF
+Add .env file in frontend folder
+VITE_API_BASE_URL=http://localhost:5004/api (backend port)
 
-# Go back to main folder
 cd ..
 ```
 
 ---
 
-## Step 4: Start Everything
+## Step 5: Start Application
 
-**Option 1: Use the quick start script**
+**Method 1: Docker (Recommended)**
+```bash
+docker-compose up -d
+```
+
+**Method 2: Quick Script**
 ```bash
 ./run.sh
 ```
-This opens two terminal windows automatically.
 
-**Option 2: Manual start (if script doesn't work)**
+**Method 3: Manual Start**
 
-Open **first terminal window:**
+Terminal 1:
 ```bash
 cd backend
 npm run dev
 ```
 
-Open **second terminal window:**
+Terminal 2:
 ```bash
 cd frontend
 npm run dev
@@ -104,134 +103,55 @@ npm run dev
 
 ---
 
-## Step 5: Open in Browser
+## Step 6: Access Application
 
-Wait 10 seconds, then open:
+Open browser: **http://localhost:5174**
 
-**http://localhost:5174**
-
-Login with:
+Login:
 - Email: `superadmin@gmail.com`
 - Password: `super12345`
 
 ---
 
-## Test the System
-
-### Send Sample Logs
+## Test System
 
 ```bash
-# Run the test script
 ./samples/send_logs.sh
 ```
 
-This sends example logs and triggers an alert.
-
-### Check the Dashboard
-
-1. Go to **Dashboard** page
-2. You should see charts with data
-3. Go to **Alerts** page
-4. You should see 1 alert (multiple failed logins)
+Check:
+- Dashboard page shows data
+- Alerts page shows 1 alert
 
 ---
 
-## Common Problems
-
-### "Port already in use"
-
-```bash
-# Kill process on port 5004
-lsof -ti:5004 | xargs kill -9
-
-# Kill process on port 5174
-lsof -ti:5174 | xargs kill -9
-```
-
-Then start again.
-
-### "Cannot connect to MongoDB"
-
-Make sure MongoDB is running:
-
-```bash
-# Start MongoDB
-mongod
-```
-
-Or check if it's already running:
-```bash
-ps aux | grep mongod
-```
-
-### "Login failed"
-
-Run the seed script again:
-```bash
-cd backend
-npm run seed:admin
-```
+Cannot connect to database:
+- Check MongoDB Atlas connection string
+- Verify password is correct
+- Check IP whitelist includes `0.0.0.0/0`
 
 ---
 
-## Stop the System
+## Quick Reference
 
-Press `Ctrl + C` in both terminal windows.
+**URLs:**
+- Frontend: http://localhost:5174
+- Backend: http://localhost:5004
 
----
-
-## Next Steps
-
-1. ✅ Login successful
-2. ✅ See dashboard with data
-3. ✅ Alerts are working
-4. Ready to test more features!
-
----
-
-## Project Structure
-
-```
-nexlog/
-├── backend/          # API server (port 5004)
-├── frontend/         # Web UI (port 5174)
-├── samples/          # Test log files
-├── tests/            # Test cases
-└── run.sh            # Quick start script
-```
-
----
-
-## Helpful Commands
-
+**Commands:**
 ```bash
-# Install everything
+# Install
 cd backend && npm install
-cd ../frontend && npm install
+cd frontend && npm install
+
+# Seed admin
+cd backend && npm run seed:admin
 
 # Start backend
 cd backend && npm run dev
 
 # Start frontend
 cd frontend && npm run dev
-
-# Create super admin
-cd backend && npm run seed:admin
-
-# Send test logs
-./samples/send_logs.sh
 ```
 
 ---
-
-## What Ports are Used?
-
-- **Frontend:** http://localhost:5174
-- **Backend:** http://localhost:5004
-- **MongoDB:** localhost:27017
-
-Make sure these ports are free before starting.
-
----
-
-That's it! Simple and working. 🚀

@@ -6,10 +6,12 @@ import { config } from './env';
  */
 export async function connectDB(): Promise<void> {
     try {
+        const isAtlas = config.MONGO_URI.includes('mongodb+srv');
+
         await mongoose.connect(config.MONGO_URI, {
-            // SSL/TLS options for MongoDB Atlas
-            tls: true,
-            tlsAllowInvalidCertificates: true,  // For development only
+            // SSL/TLS options - only for Atlas
+            tls: isAtlas,
+            tlsAllowInvalidCertificates: isAtlas,
             serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
         });

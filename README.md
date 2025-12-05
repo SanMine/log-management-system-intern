@@ -1,409 +1,283 @@
 # Nexlog
 
-**Next-Generation Log Management & Security Intelligence Platform**
+Next-Generation Log Management and Security Intelligence Platform
 
-A comprehensive real-time log management and analysis platform with advanced SIEM capabilities, role-based access control, and intelligent alert detection.
+A log management system that collects security logs from multiple sources, detects threats, and shows them on a dashboard.
+
+---
+
+## What It Does
+
+- Collects logs from 7 different sources (APIs, firewalls, cloud services)
+- Stores all logs in one database
+- Detects security threats automatically
+- Shows data on charts and dashboards
+- Supports multiple companies (each sees only their own data)
+
+---
 
 ## Features
 
-### 🔒 Authentication & RBAC
-- **Super Admin**: Full system access, view all tenants, read-only alert monitoring
-- **Viewer**: Tenant-specific access, alert management, log analysis
-- JWT-based authentication with bcrypt password hashing
-- Protected routes with role-based permissions
+**Authentication**
+- Super Admin: Can see all companies
+- Viewer: Can see only their company data
+- Secure login with JWT tokens
 
-### 📊 Log Management
-- **Multi-source ingestion**: API, Firewall, Network, CrowdStrike, AWS, M365, Active Directory
-- **Batch upload**: JSON and CSV file support
-- **Real-time processing**: Automatic normalization to central schema
-- **Advanced search**: Full-text search across all log fields with pagination
-- **Auto-incrementing IDs**: Collision-free log identification
+**Log Sources**
+- API, Firewall, Network
+- CrowdStrike, AWS CloudTrail
+- Microsoft 365, Active Directory
 
-### 🚨 Intelligent Alerting
-- **Rule 1**: Multiple failed login attempts (≥3 from same IP within 5 minutes)
-- **Rule 2**: Distributed attacks (≥3 different IPs targeting same user within 10 minutes)
-- **Auto-resolution**: Alerts automatically resolve on successful user login
-- **Status management**: Viewers can update alert status (OPEN → INVESTIGATING → RESOLVED)
+**Alerts**
+- Detects multiple failed login attempts
+- Detects distributed attacks
+- Auto-resolves when user logs in successfully
 
-### 📈 Analytics & Visualization
-- Real-time dashboards with metrics and charts
-- User activity tracking and timeline analysis
-- Tenant-specific data filtering
-- IP address tracking and visualization
-
-### 🔍 Advanced Search
-- Free-text search across 10+ log fields
-- Case-insensitive pattern matching
-- RBAC-filtered results
-- Pagination support (up to 100 results per page)
+**Dashboard**
+- Real-time charts
+- Search logs by user, IP, time
+- Track user activity
 
 ---
 
 ## Tech Stack
 
-**Backend:**
-- Node.js + Express.js + TypeScript
-- MongoDB with Mongoose ODM
-- JWT authentication + bcrypt
-- Multer for file uploads
-
-**Frontend:**
-- React 18 + TypeScript
-- React Router v6
-- Tailwind CSS + shadcn/ui
-- Recharts for visualization
+**Backend:** Node.js, Express, MongoDB, TypeScript  
+**Frontend:** React, TypeScript, Tailwind CSS  
+**Security:** JWT, bcrypt, HTTPS
 
 ---
 
 ## Quick Start
 
-### Prerequisites
-- Node.js 18+ and npm
-- MongoDB 5.0+
+**Prerequisites:**
+- Node.js 18+
+- MongoDB Atlas account (free)
 - Git
 
-### 1. Clone Repository
+**Option 1: Docker (Easiest)**
 ```bash
-git clone <repository-url>
-cd log-management-system-intern
+docker-compose up -d
 ```
+Then open **http://localhost:5174**
 
-### 2. Backend Setup
+**Option 2: Manual Script**
+```bash
+./run.sh
+```
+The script will install dependencies and start servers.
+
+**Option 3: Manual Setup**
+
+**Login:**
+- Email: `superadmin@gmail.com`
+- Password: `super12345`
+
+---
+
+## Manual Setup
+
+If `run.sh` doesn't work:
+
+**1. Backend:**
 ```bash
 cd backend
 npm install
+```
 
-# Create .env file
-cat > .env << EOF
-MONGO_URI=mongodb://localhost:27017/log-management
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
+Create `.env` file:
+```
+MONGO_URI=mongodb+srv://your-connection-string/nexlog
+JWT_SECRET=your-secret-key
 PORT=5004
 FRONTEND_URL=http://localhost:5174
-EOF
+```
 
-# Seed super admin account
+```bash
 npm run seed:admin
-
-# Start development server
 npm run dev
 ```
 
-**Super Admin Credentials:**
-- Email: `superadmin@gmail.com`
-- Password: `super12345`
-
-### 3. Frontend Setup
+**2. Frontend:**
 ```bash
 cd frontend
 npm install
+```
 
-# Create .env file
-cat > .env << EOF
+Create `.env` file:
+```
 VITE_API_BASE_URL=http://localhost:5004/api
-EOF
+```
 
-# Start development server
+```bash
 npm run dev
 ```
 
-Visit: **http://localhost:5174**
-
 ---
 
-## Usage Guide
+## Usage
 
-### Creating Users
-
-**Super Admin** (Pre-seeded):
-- Email: `superadmin@gmail.com`
-- Password: `super12345`
-- Can view all tenants and alerts (read-only on alerts)
-
-**Viewer Account** (Self-service signup):
+**Create Account:**
 1. Click "Sign up" on login page
-2. Enter email, password, and organization name
-3. System auto-creates tenant and viewer account
-4. Login with your credentials
-5. Access limited to your organization's data
+2. Enter email, password, organization name
+3. Login with your credentials
 
-### Ingesting Logs
-
-#### Method 1: HTTP POST (Single Log)
-```bash
-POST http://localhost:5004/api/ingest/http
-Content-Type: application/json
-
-{
-  "tenant": "acme.com",
-  "source": "api",
-  "event_type": "login_success",
-  "user": "alice@acme.com",
-  "ip": "192.168.1.100",
-  "timestamp": "2024-01-15T10:30:00Z"
-}
-```
-
-#### Method 2: Batch POST (Multiple Logs)
-```bash
-POST http://localhost:5004/api/ingest/batch
-Content-Type: application/json
-
-[
-  { "tenant": "acme.com", "source": "api", ... },
-  { "tenant": "acme.com", "source": "firewall", ... }
-]
-```
-
-#### Method 3: File Upload (JSON/CSV)
+**Upload Logs:**
 1. Login to dashboard
-2. Click "Upload JSON" button (admins only)
-3. Select `.json` or `.csv` file
-4. Format examples in `/samples` directory
+2. Click "Upload JSON" button
+3. Select file from `/samples` folder
 
-**CSV Format:**
-```csv
-tenant,source,event_type,user,ip,timestamp
-acme.com,api,login_failed,alice,192.168.1.1,2024-01-15T10:00:00Z
-```
+**Search Logs:**
+1. Go to User Activity page
+2. Select user and time range
+3. Enter search term
 
-**JSON Format:**
-```json
-[
-  {
-    "tenant": "acme.com",
-    "source": "api",
-    "event_type": "login_failed",
-    "user": "alice",
-    "ip": "192.168.1.1",
-    "timestamp": "2024-01-15T10:00:00Z"
-  }
-]
-```
-
-### Searching Logs
-
-1. Navigate to **User Activity** page
-2. Select tenant, user, and time range
-3. Enter search query in search bar
-4. Examples:
-   - `"login_failed"` - Find failed login events
-   - `"192.168.1.1"` - Find logs from specific IP
-   - `"powershell.exe"` - Find process activity
-   - `"wrong password"` - Find error messages
-
-### Managing Alerts
-
-**Viewing Alerts** (All users):
-- Navigate to Alerts page
-- Filter by status or time range
-- View alert details (rule, user, IP, count)
-
-**Updating Status** (Viewers only):
-- Click status dropdown on alert
-- Select: OPEN, INVESTIGATING, or RESOLVED
-- Super admins have read-only access
-
-**Automatic Behavior**:
-- New alerts appear after 3+ failed logins
-- Alerts auto-resolve when user logs in successfully
-- Both OPEN and INVESTIGATING alerts resolve on success
+**View Alerts:**
+1. Go to Alerts page
+2. See detected threats
+3. Update status: OPEN → INVESTIGATING → RESOLVED
 
 ---
 
-## API Documentation
+## API Endpoints
 
-### Authentication Endpoints
+**Authentication:**
+- `POST /api/auth/login` - Login
+- `POST /api/auth/signup` - Create account
 
-```
-POST /api/auth/signup
-Body: { email, password, tenantName }
-Response: { user, token }
+**Logs:**
+- `POST /api/ingest/http` - Send single log
+- `POST /api/ingest/batch` - Send multiple logs
+- `GET /api/logs/search` - Search logs
 
-POST /api/auth/login
-Body: { email, password }
-Response: { user, token }
+**Alerts:**
+- `GET /api/alerts` - Get alerts
+- `PATCH /api/alerts/:id` - Update alert
 
-GET /api/auth/me
-Headers: Authorization: Bearer <token>
-Response: { user }
+**Dashboard:**
+- `GET /api/dashboard` - Get stats
 
-POST /api/auth/logout
-Response: { message }
-```
-
-### Log Ingestion
-
-```
-POST /api/ingest/http
-Body: { tenant, source, event_type, user, ip, ... }
-
-POST /api/ingest/batch
-Body: [{ tenant, source, ... }, ...]
-
-POST /api/ingest/file
-Body: multipart/form-data with file
-```
-
-### Log Search
-
-```
-GET /api/logs/search?tenant=<name>&from=<ISO>&to=<ISO>&q=<query>&page=1&limit=50
-Response: { data: [...], page, total, totalPages, hasMore }
-```
-
-### Alerts
-
-```
-GET /api/alerts?tenant=<id>&status=<status>&timeRange=<range>
-Response: [{ id, ruleName, user, ip, status, ... }]
-
-PATCH /api/alerts/:id
-Body: { status: "OPEN" | "INVESTIGATING" | "RESOLVED" }
-Response: { id, status, ... }
-```
-
-### Dashboard
-
-```
-GET /api/dashboard?tenant=<id>&timeRange=<range>
-Response: { summary, recentLogs, topSources, topUsers }
-```
-
-### User Activity
-
-```
-GET /api/users/activity?user=<username>&tenant=<id>&timeRange=<range>
-Response: { summary, eventsOverTime, recentEvents, relatedAlerts }
-```
+All endpoints (except login/signup) require JWT token.
 
 ---
 
 ## Project Structure
 
 ```
-log-management-system-intern/
-├── backend/
-│   ├── src/
-│   │   ├── config/         # DB, env configuration
-│   │   ├── middleware/     # Auth, error handling
-│   │   ├── models/         # Mongoose schemas
-│   │   ├── normalizers/    # Log source normalizers
-│   │   ├── routes/         # API endpoints
-│   │   ├── scripts/        # Seed scripts
-│   │   ├── services/       # Business logic
-│   │   ├── types/          # TypeScript types
-│   │   └── server.ts       # Express app
-│   ├── package.json
-│   └── tsconfig.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── contexts/       # React context (auth)
-│   │   ├── hooks/          # Custom hooks
-│   │   ├── pages/          # Page components
-│   │   ├── services/       # API calls
-│   │   ├── data/           # Mock data, types
-│   │   └── main.tsx        # App entry
-│   ├── package.json
-│   └── vite.config.ts
-├── samples/               # Example log files
-├── CSV_INGESTION_GUIDE.md
-└── README.md
+nexlog/
+├── backend/          # API server
+├── frontend/         # Web interface
+├── samples/          # Example log files
+├── tests/            # Test cases
+└── docs/             # Documentation
 ```
 
 ---
 
-## RBAC Matrix
+## Alert Rules
 
-| Feature | Super Admin | Viewer |
-|---------|------------|--------|
-| View all tenants | ✅ | ❌ (Own only) |
-| Dashboard access | ✅ All data | ✅ Tenant data |
-| View alerts | ✅ Read-only | ✅ Full access |
-| Update alert status | ❌ | ✅ |
-| Upload logs | ✅ | ❌ |
-| Search logs | ✅ All logs | ✅ Tenant logs |
-| User activity | ✅ All users | ✅ Tenant users |
+**Rule 1: Multiple Failed Logins**
+- Triggers when: 3+ failed logins from same IP in 5 minutes
+- Purpose: Detect brute force attacks
+
+**Rule 2: Distributed Attack**
+- Triggers when: 3+ different IPs attack same user in 10 minutes
+- Purpose: Detect coordinated attacks
+
+**Auto-Resolve:**
+- When user successfully logs in, all alerts close automatically
 
 ---
 
-## Development
+## Supported Log Sources
 
-### Run Tests
+1. **API Logs** - REST API events
+2. **Firewall** - Network security logs
+3. **Network** - Traffic logs
+4. **CrowdStrike** - Endpoint security
+5. **AWS CloudTrail** - Cloud activity
+6. **Microsoft 365** - Office events
+7. **Active Directory** - User authentication
+
+---
+
+## Security
+
+- Passwords hashed with bcrypt
+- JWT tokens for authentication
+- HTTPS in production (Render + Vercel)
+- Multi-tenant data isolation
+- All database queries filtered by company ID
+
+---
+
+## Deployment
+
+**Local Development:**
+- Backend: http://localhost:5004
+- Frontend: http://localhost:5174
+
+**Production (SaaS):**
+- Backend: Deploy to Render
+- Frontend: Deploy to Vercel
+- Database: MongoDB Atlas
+
+See `/docs/setup_saas.md` for deployment guide.
+
+---
+
+## Documentation
+
+- `/docs/architecture.md` - System design
+- `/docs/setup_appliance.md` - Local setup
+- `/docs/setup_saas.md` - Cloud deployment
+
+---
+
+## Sample Files
+
+Located in `/samples`:
+- `test-api-logs.json` - API log examples
+- `test-firewall-logs.json` - Firewall logs
+- `batch-logs-sample.json` - Multiple logs
+- `send_logs.sh` - Script to send test logs
+
+---
+
+## Testing
+
+Send test logs:
 ```bash
-# Backend
-cd backend
-npm test
-
-# Frontend
-cd frontend
-npm test
+./samples/send_logs.sh
 ```
 
-### Build for Production
-```bash
-# Backend
-cd backend
-npm run build
-npm start
-
-# Frontend
-cd frontend
-npm run build
-npm run preview
-```
-
-### Code Style
-```bash
-# Backend
-npm run lint
-
-# Frontend
-npm run lint
-```
+This will:
+- Send 8 different log types
+- Trigger alert (4 failed logins)
+- Show on dashboard
 
 ---
 
 ## Troubleshooting
 
-**MongoDB Connection Error:**
-- Ensure MongoDB is running: `mongod`
-- Check `MONGO_URI` in `.env`
-
-**Port Already in Use:**
+**Port already in use:**
 ```bash
-# Kill process on port 5004
 lsof -ti:5004 | xargs kill -9
-
-# Kill process on port 5174
 lsof -ti:5174 | xargs kill -9
 ```
 
-**Login Failed:**
-- Run seed script: `npm run seed:admin`
-- Check credentials: `superadmin@gmail.com` / `super12345`
+**Cannot login:**
+```bash
+cd backend
+npm run seed:admin
+```
 
-**CORS Errors:**
-- Verify `FRONTEND_URL` in backend `.env`
-- Verify `VITE_API_BASE_URL` in frontend `.env`
+**Database connection failed:**
+- Check MongoDB Atlas connection string
+- Verify IP whitelist includes `0.0.0.0/0`
 
 ---
 
 ## License
 
-MIT
-
-## Contributors
-
-- SanMine (Full-stack Development)
-- Google Deepmind Team (Antigravity AI Assistant)
-
----
-
-## Support
-
-For issues or questions, please check:
-1. This README
-2. `CSV_INGESTION_GUIDE.md` for file upload help
-3. API documentation above
-4. Sample files in `/samples` directory
+This project is for educational purposes.
