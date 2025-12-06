@@ -62,8 +62,15 @@ export function UploadJsonDialog({ onUploadSuccess }: UploadDialogProps) {
             const formData = new FormData();
             formData.append('file', file);
 
+            const token = localStorage.getItem('token');
+            const headers: HeadersInit = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_URL}/ingest/file`, {
                 method: 'POST',
+                headers,
                 body: formData,
             });
 

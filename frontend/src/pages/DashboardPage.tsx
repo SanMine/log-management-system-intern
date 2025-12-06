@@ -18,8 +18,13 @@ export function DashboardPage() {
     const REFRESH_INTERVAL = 30000; // 30 seconds
 
     useEffect(() => {
+        let isInitialLoad = true;
+
         async function fetchData() {
-            setIsLoading(true);
+            // Only show loading spinner on initial load, not on auto-refresh
+            if (isInitialLoad) {
+                setIsLoading(true);
+            }
             setError('');
             try {
                 const data = await dashboardAPI.getData(selectedTenant, timeRange);
@@ -28,7 +33,10 @@ export function DashboardPage() {
                 setError(err.message || 'Failed to load dashboard data');
                 console.error('Dashboard fetch error:', err);
             } finally {
-                setIsLoading(false);
+                if (isInitialLoad) {
+                    setIsLoading(false);
+                    isInitialLoad = false;
+                }
             }
         }
 

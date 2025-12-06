@@ -25,8 +25,13 @@ export function AlertsPage() {
     const REFRESH_INTERVAL = 30000; // 30 seconds
 
     useEffect(() => {
+        let isInitialLoad = true;
+
         async function fetchAlerts() {
-            setIsLoading(true);
+            // Only show loading spinner on initial load, not on auto-refresh
+            if (isInitialLoad) {
+                setIsLoading(true);
+            }
             setError('');
             try {
                 const data = await alertsAPI.getAlerts(tenant, selectedStatus, timeRange);
@@ -35,7 +40,10 @@ export function AlertsPage() {
                 setError(err.message || 'Failed to load alerts');
                 console.error('Alerts fetch error:', err);
             } finally {
-                setIsLoading(false);
+                if (isInitialLoad) {
+                    setIsLoading(false);
+                    isInitialLoad = false;
+                }
             }
         }
 
