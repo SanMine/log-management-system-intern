@@ -7,10 +7,8 @@ import { UploadJsonDialog } from '@/components/dashboard/UploadJsonDialog';
 import { dashboardAPI } from '@/services/api';
 import { Activity, Server, Users, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 
 export function DashboardPage() {
-    const { user: currentUser } = useAuth();
     const [selectedTenant, setSelectedTenant] = useState('all');
     const [timeRange, setTimeRange] = useState('last_24h');
     const [dashboardData, setDashboardData] = useState<any>(null);
@@ -18,11 +16,6 @@ export function DashboardPage() {
     const [error, setError] = useState('');
 
     const REFRESH_INTERVAL = 30000; // 30 seconds
-
-    // For VIEWER role, always use their tenantId instead of selected tenant
-    const effectiveTenant = currentUser?.role === 'VIEWER'
-        ? String(currentUser.tenantId)
-        : selectedTenant;
 
     useEffect(() => {
         let isInitialLoad = true;
@@ -34,7 +27,7 @@ export function DashboardPage() {
             }
             setError('');
             try {
-                const data = await dashboardAPI.getData(effectiveTenant, timeRange);
+                const data = await dashboardAPI.getData(selectedTenant, timeRange);
                 setDashboardData(data);
             } catch (err: any) {
                 setError(err.message || 'Failed to load dashboard data');
@@ -56,7 +49,7 @@ export function DashboardPage() {
 
         // Cleanup interval on unmount
         return () => clearInterval(intervalId);
-    }, [effectiveTenant, timeRange]);
+    }, [selectedTenant, timeRange]);
 
     const handleRefreshData = () => {
         setSelectedTenant(prev => prev);

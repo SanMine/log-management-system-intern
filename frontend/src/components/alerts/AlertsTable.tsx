@@ -10,6 +10,7 @@ import type { Alert } from '@/data/mockData';
 import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { IPDisplay } from './IPDisplay';
 
 interface AlertsTableProps {
     alerts: Alert[];
@@ -49,7 +50,7 @@ export function AlertsTable({ alerts }: AlertsTableProps) {
                                     </span>
                                 </TableCell>
                                 <TableCell className="font-mono text-sm text-slate-600">
-                                    {alert.ip}
+                                    <IPDisplay alert={alert} />
                                 </TableCell>
                                 <TableCell className="text-gray-700">{alert.user || 'N/A'}</TableCell>
                                 <TableCell>
