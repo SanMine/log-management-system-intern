@@ -12,8 +12,10 @@ import { alertsAPI } from '@/services/api';
 import { timeRangeOptions } from '@/data/mockData';
 import { AlertTriangle } from 'lucide-react';
 import { useTenants } from '@/hooks/useTenants';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function AlertsPage() {
+    const { user: currentUser } = useAuth();
     const [timeRange, setTimeRange] = useState('24h');
     const [tenant, setTenant] = useState('all');
     const [selectedStatus, setSelectedStatus] = useState('all');
@@ -23,6 +25,11 @@ export function AlertsPage() {
     const { tenants: tenantOptions } = useTenants();
 
     const REFRESH_INTERVAL = 30000; // 30 seconds
+
+    // For VIEWER role, always use their tenantId instead of selected tenant
+    const effectiveTenant = currentUser?.role === 'VIEWER'
+        ? String(currentUser.tenantId)
+        : tenant;
 
     useEffect(() => {
         let isInitialLoad = true;
@@ -34,7 +41,7 @@ export function AlertsPage() {
             }
             setError('');
             try {
-                const data = await alertsAPI.getAlerts(tenant, selectedStatus, timeRange);
+                const data = await alertsAPI.getAlerts(effectiveTenant, selectedStatus, timeRange);
                 setAlerts(data);
             } catch (err: any) {
                 setError(err.message || 'Failed to load alerts');
@@ -56,7 +63,7 @@ export function AlertsPage() {
 
         // Cleanup interval on unmount
         return () => clearInterval(intervalId);
-    }, [tenant, selectedStatus, timeRange]);
+    }, [effectiveTenant, selectedStatus, timeRange]);
 
     const statusOptions = [
         { value: 'all', label: 'All Status' },
