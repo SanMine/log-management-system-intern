@@ -99,10 +99,11 @@ export function UsersActivityPage() {
             }
         }
 
-        fetchActivity();
-
-        // Auto-refresh only when not actively searching
+        // Only fetch activity if not showing search results
         if (!searchResults) {
+            fetchActivity();
+
+            // Auto-refresh only when not actively searching
             const intervalId = setInterval(() => {
                 fetchActivity();
             }, REFRESH_INTERVAL);
