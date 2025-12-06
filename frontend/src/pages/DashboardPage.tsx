@@ -14,7 +14,6 @@ export function DashboardPage() {
     const [dashboardData, setDashboardData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
     const REFRESH_INTERVAL = 30000; // 30 seconds
 
@@ -25,7 +24,6 @@ export function DashboardPage() {
             try {
                 const data = await dashboardAPI.getData(selectedTenant, timeRange);
                 setDashboardData(data);
-                setLastUpdated(new Date());
             } catch (err: any) {
                 setError(err.message || 'Failed to load dashboard data');
                 console.error('Dashboard fetch error:', err);
